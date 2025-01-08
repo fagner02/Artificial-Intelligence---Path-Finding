@@ -1,3 +1,12 @@
 {
-    "C_Cpp.errorSquiggles": "enabled"
+    "C_Cpp.errorSquiggles": "enabled",
+    "files.associations": {
+        "*.gd": "gdscript",
+        "stack": "cpp",
+        "exception": "cpp",
+        "stdexcept": "cpp",
+        "iostream": "cpp",
+        "csignal": "cpp",
+        "iomanip": "cpp"
+    }
 }
