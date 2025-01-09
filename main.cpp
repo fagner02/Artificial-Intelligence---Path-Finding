@@ -45,15 +45,16 @@ void print(point target, point next, point prev, int visited[space_size][space_s
     std::cout << "\x1b[H\x1b[J" << std::flush;
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
-            if (i == target.x && j == target.y) {
-                cout << setw(4) << "*" << setw(4) << " | ";
-                continue;
+            if (i == next.x && j == next.y) {
+                cout << "\033[1;36m" << setw(4) << "X" << "\033[0m" << setw(4) << " | ";
             } else if (i == prev.x && j == prev.y) {
                 cout << "\033[1;31m" << setw(4) << "P" << "\033[0m" << setw(4) << " | ";
-            } else if (i == next.x && j == next.y) {
-                cout << "\033[1;36m" << setw(4) << "X" << "\033[0m" << setw(4) << " | ";
-            } else {
+            } else if (i == target.x && j == target.y) {
+                cout << setw(4) << "T" << setw(4) << " | ";
+            } else if (visited[i][j] == -1) {
                 cout << setw(4) << visited[i][j] << setw(4) << " | ";
+            } else {
+                cout << "\033[1;32m" << setw(4) << visited[i][j] << "\033[0m" << setw(4) << " | ";
             }
         }
         cout << "\n";
@@ -71,7 +72,7 @@ void dfs(point start, point target) {
     while (!stack.empty()) {
         point node = stack.top();
         stack.pop();
-        // cout << node.x << "," << node.y << "\n";
+
         for (int i = 0; i < 4; i++) {
             point next = { node.x + dirs[i].x, node.y + dirs[i].y };
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
@@ -79,13 +80,14 @@ void dfs(point start, point target) {
             }
             if (next.x == target.x && next.y == target.y) {
                 cout << "Found target\n" << visited[node.x][node.y] + 1 << "\n";
-                // return;
             }
             if (visited[next.x][next.y] == -1 ||
                 visited[node.x][node.y] + 1 < visited[next.x][next.y]) {
                 stack.push(next);
 
                 visited[next.x][next.y] = visited[node.x][node.y] + 1;
+
+                this_thread::sleep_for(chrono::milliseconds(500));
                 print(target, next, node, visited);
             }
         }
@@ -112,7 +114,7 @@ void dfs(point start, point target) {
             }
         }
         path.push_back(target);
-
+        this_thread::sleep_for(chrono::milliseconds(500));
         print_path(path, visited);
     }
 }
@@ -120,7 +122,7 @@ void dfs(point start, point target) {
 int main() {
     cout << "Hello, World!\n";
 
-    dfs(point{ 0, 0 }, point{ 0, 6 });
+    dfs(point{ 0, 0 }, point{ 1, 5 });
 
     return 0;
 }
