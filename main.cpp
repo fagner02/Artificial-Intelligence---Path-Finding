@@ -2,100 +2,18 @@
 #include <vector>
 #include <stack>
 #include <tuple>
+#include <map>
 #include <cstring>
 #include <iomanip>
 #include <algorithm>
 #include <chrono>
 #include <thread>
-#include "costs.cpp"
+#include "structures.h"
+#include "constants.h"
+#include "costs.h"
+#include "print.h"
 
 using namespace std;
-
-const int space_size = 6;
-
-struct point {
-    int x, y;
-};
-
-struct visited_info {
-    float cost;
-    int step;
-};
-
-const point dirs[] = {
-    /*0: down*/ {0, 1},
-    /*1: right*/{1, 0},
-    /*2: up*/   {0, -1},
-    /*3: left*/ {-1, 0}
-};
-
-bool operator==(const point& lhs, const point& rhs) {
-    return lhs.x == rhs.x && lhs.y == rhs.y;
-}
-
-void print_path(vector<point>& path, visited_info visited[space_size][space_size]) {
-    std::cout << "\x1b[H\x1b[J" << std::flush;
-    for (int y = space_size - 1; y > -1; y--) {
-        for (int x = 0; x < space_size; x++) {
-            point p = { x, y };
-            auto it = std::find(path.begin(), path.end(), p);
-            if (it != path.end()) {
-                cout << "\033[32;1m" << setw(4) << visited[x][y].cost << "\033[0m" << setw(4) << " | ";
-            } else {
-                cout << setw(4) << visited[x][y].cost << setw(4) << " | ";
-            }
-        }
-        cout << "\n";
-    }
-}
-
-void print(point target, point next, point prev, visited_info visited[space_size][space_size]) {
-    std::cout << "\x1b[H\x1b[J" << std::flush;
-    for (int i = 0; i < space_size; i++) {
-        for (int j = 0; j < space_size; j++) {
-            if (i == next.x && j == next.y) {
-                cout << "\033[1;36m" << setw(4) << "X" << "\033[0m" << setw(4) << " | ";
-            } else if (i == prev.x && j == prev.y) {
-                cout << "\033[1;31m" << setw(4) << "P" << "\033[0m" << setw(4) << " | ";
-            } else if (i == target.x && j == target.y) {
-                cout << setw(4) << "T" << setw(4) << " | ";
-            } else if (visited[i][j].cost == -1) {
-                cout << setw(4) << visited[i][j].cost << setw(4) << " | ";
-            } else {
-                cout << "\033[1;32m" << setw(4) << visited[i][j].cost << "\033[0m" << setw(4) << " | ";
-            }
-        }
-        cout << "\n";
-    }
-    cout << "\n";
-}
-
-void calculate_path(point start, point target, visited_info visited[space_size][space_size]) {
-    vector<point> path = { target };
-
-    while (target.x != start.x || target.y != start.y) {
-        cout << target.x << "," << target.y << "\n";
-        point last = target;
-        bool assigned = false;
-        for (int i = 0; i < 4; i++) {
-            point next = { last.x + dirs[i].x, last.y + dirs[i].y };
-            if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
-                continue;
-            }
-            if (!assigned) {
-                target = next;
-                assigned = true;
-            } else {
-                if (visited[next.x][next.y].cost < visited[target.x][target.y].cost) {
-                    target = next;
-                }
-            }
-        }
-        path.push_back(target);
-        this_thread::sleep_for(chrono::milliseconds(500));
-        print_path(path, visited);
-    }
-}
 
 void dfs(point start, point target, cost_fn cost) {
     visited_info visited[space_size][space_size];
@@ -146,7 +64,7 @@ struct node {
 int main() {
     cout << "Hello, World!\n";
 
-    map<point, vector<point>> graph;
+    std::map<pair<int, int>, std::vector<point>> graph;
 
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
@@ -164,7 +82,6 @@ int main() {
                 graph[{i, j}].push_back(next);
             }
         }
-        cout << "\n";
     }
 
     dfs(point{ 0, 0 }, point{ 5, 5 }, costs[3]);

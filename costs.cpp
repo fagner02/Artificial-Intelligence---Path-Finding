@@ -1,7 +1,4 @@
-#include <math.h>
-#include <bits/stdc++.h>
-
-typedef std::function<float(int, int)> cost_fn;
+#include "costs.h"
 
 float c3(float t) {
     return 10.0 + fmod(abs(5.0f - t), 6.0f);
@@ -38,10 +35,3 @@ float cost_v10hc4(int dir, int step) {
         return c4(step);
     }
 }
-
-const cost_fn costs[] = {
-    cost_all10,
-    cost_v10h15,
-    cost_v10hc3,
-    cost_v10hc4
-};
