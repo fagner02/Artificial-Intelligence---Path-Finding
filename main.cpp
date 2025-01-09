@@ -25,7 +25,7 @@ bool operator==(const point& lhs, const point& rhs) {
     return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
-void print_path(vector<point> path, int visited[space_size][space_size]) {
+void print_path(vector<point>& path, int visited[space_size][space_size]) {
     std::cout << "\x1b[H\x1b[J" << std::flush;
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
@@ -62,6 +62,33 @@ void print(point target, point next, point prev, int visited[space_size][space_s
     cout << "\n";
 }
 
+void calculate_path(point start, point target, int visited[space_size][space_size]) {
+    vector<point> path = { target };
+
+    while (target.x != start.x || target.y != start.y) {
+        cout << target.x << "," << target.y << "\n";
+        point last = target;
+        bool assigned = false;
+        for (int i = 0; i < 4; i++) {
+            point next = { last.x + dirs[i].x, last.y + dirs[i].y };
+            if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
+                continue;
+            }
+            if (!assigned) {
+                target = next;
+                assigned = true;
+            } else {
+                if (visited[next.x][next.y] < visited[target.x][target.y]) {
+                    target = next;
+                }
+            }
+        }
+        path.push_back(target);
+        this_thread::sleep_for(chrono::milliseconds(500));
+        print_path(path, visited);
+    }
+}
+
 void dfs(point start, point target) {
     int visited[space_size][space_size];
     std::memset(visited, -1, sizeof(visited));
@@ -93,34 +120,35 @@ void dfs(point start, point target) {
         }
     }
 
-    vector<point> path = { target };
-
-    while (target.x != start.x || target.y != start.y) {
-        cout << target.x << "," << target.y << "\n";
-        point last = target;
-        bool assigned = false;
-        for (int i = 0; i < 4; i++) {
-            point next = { last.x + dirs[i].x, last.y + dirs[i].y };
-            if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
-                continue;
-            }
-            if (!assigned) {
-                target = next;
-                assigned = true;
-            } else {
-                if (visited[next.x][next.y] < visited[target.x][target.y]) {
-                    target = next;
-                }
-            }
-        }
-        path.push_back(target);
-        this_thread::sleep_for(chrono::milliseconds(500));
-        print_path(path, visited);
-    }
+    calculate_path(start, target, visited);
 }
+
+struct node {
+    point p;
+    string label;
+};
 
 int main() {
     cout << "Hello, World!\n";
+
+    node nodes[space_size * space_size];
+    vector<vector<node>> graph(space_size * space_size, vector<node>());
+
+    int index = 0;
+    for (int i = 0; i < space_size; i++) {
+        for (int j = 0; j < space_size; j++) {
+            nodes[index].p = { i, j };
+
+            for (int k = 0; k < 4; k++) {
+                point next = { i + dirs[k].x, j + dirs[k].y };
+                if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
+                    continue;
+                }
+                graph[index].push_back(nodes[next.x * space_size + next.y]);
+            }
+        }
+        cout << "\n";
+    }
 
     dfs(point{ 0, 0 }, point{ 1, 5 });
 
