@@ -1,4 +1,4 @@
-#include "print.h"
+#include <print.h>
 
 void print_path(std::vector<point>& path, visited_info visited[space_size][space_size]) {
     std::cout << "\x1b[H\x1b[J" << std::flush;

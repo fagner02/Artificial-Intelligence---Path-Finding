@@ -1,4 +1,4 @@
-#include "costs.h"
+#include <costs.h>
 
 float c3(float t) {
     return 10.0 + fmod(abs(5.0f - t), 6.0f);

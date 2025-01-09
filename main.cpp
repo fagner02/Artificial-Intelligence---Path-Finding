@@ -8,10 +8,10 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
-#include "structures.h"
-#include "constants.h"
-#include "costs.h"
-#include "print.h"
+#include <structures.h>
+#include <constants.h>
+#include <costs.h>
+#include <print.h>
 
 using namespace std;
 
