@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
-
+#include "costs.cpp"
 
 using namespace std;
 
@@ -17,31 +17,39 @@ struct point {
     int x, y;
 };
 
+struct visited_info {
+    float cost;
+    int step;
+};
+
 const point dirs[] = {
-    {0, 1}, {1, 0}, {0, -1}, {-1, 0}
+    /*0: down*/ {0, 1},
+    /*1: right*/{1, 0},
+    /*2: up*/   {0, -1},
+    /*3: left*/ {-1, 0}
 };
 
 bool operator==(const point& lhs, const point& rhs) {
     return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
-void print_path(vector<point>& path, int visited[space_size][space_size]) {
+void print_path(vector<point>& path, visited_info visited[space_size][space_size]) {
     std::cout << "\x1b[H\x1b[J" << std::flush;
-    for (int i = 0; i < space_size; i++) {
-        for (int j = 0; j < space_size; j++) {
-            point p = { i, j };
+    for (int y = space_size - 1; y > -1; y--) {
+        for (int x = 0; x < space_size; x++) {
+            point p = { x, y };
             auto it = std::find(path.begin(), path.end(), p);
             if (it != path.end()) {
-                cout << "\033[32;1m" << setw(4) << visited[i][j] << "\033[0m" << setw(4) << " | ";
+                cout << "\033[32;1m" << setw(4) << visited[x][y].cost << "\033[0m" << setw(4) << " | ";
             } else {
-                cout << setw(4) << visited[i][j] << setw(4) << " | ";
+                cout << setw(4) << visited[x][y].cost << setw(4) << " | ";
             }
         }
         cout << "\n";
     }
 }
 
-void print(point target, point next, point prev, int visited[space_size][space_size]) {
+void print(point target, point next, point prev, visited_info visited[space_size][space_size]) {
     std::cout << "\x1b[H\x1b[J" << std::flush;
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
@@ -51,10 +59,10 @@ void print(point target, point next, point prev, int visited[space_size][space_s
                 cout << "\033[1;31m" << setw(4) << "P" << "\033[0m" << setw(4) << " | ";
             } else if (i == target.x && j == target.y) {
                 cout << setw(4) << "T" << setw(4) << " | ";
-            } else if (visited[i][j] == -1) {
-                cout << setw(4) << visited[i][j] << setw(4) << " | ";
+            } else if (visited[i][j].cost == -1) {
+                cout << setw(4) << visited[i][j].cost << setw(4) << " | ";
             } else {
-                cout << "\033[1;32m" << setw(4) << visited[i][j] << "\033[0m" << setw(4) << " | ";
+                cout << "\033[1;32m" << setw(4) << visited[i][j].cost << "\033[0m" << setw(4) << " | ";
             }
         }
         cout << "\n";
@@ -62,7 +70,7 @@ void print(point target, point next, point prev, int visited[space_size][space_s
     cout << "\n";
 }
 
-void calculate_path(point start, point target, int visited[space_size][space_size]) {
+void calculate_path(point start, point target, visited_info visited[space_size][space_size]) {
     vector<point> path = { target };
 
     while (target.x != start.x || target.y != start.y) {
@@ -78,7 +86,7 @@ void calculate_path(point start, point target, int visited[space_size][space_siz
                 target = next;
                 assigned = true;
             } else {
-                if (visited[next.x][next.y] < visited[target.x][target.y]) {
+                if (visited[next.x][next.y].cost < visited[target.x][target.y].cost) {
                     target = next;
                 }
             }
@@ -89,13 +97,21 @@ void calculate_path(point start, point target, int visited[space_size][space_siz
     }
 }
 
-void dfs(point start, point target) {
-    int visited[space_size][space_size];
-    std::memset(visited, -1, sizeof(visited));
+
+void dfs(point start, point target, cost_fn cost) {
+    visited_info visited[space_size][space_size];
+
+    for (int i = 0; i < space_size; i++) {
+        for (int j = 0; j < space_size; j++) {
+            visited[i][j].cost = -1;
+            visited[i][j].step = -1;
+        }
+    }
 
     stack<point> stack;
     stack.push(start);
-    visited[start.x][start.y] = 0;
+    visited[start.x][start.y].cost = 0;
+    visited[start.x][start.y].step = 0;
     while (!stack.empty()) {
         point node = stack.top();
         stack.pop();
@@ -106,16 +122,16 @@ void dfs(point start, point target) {
                 continue;
             }
             if (next.x == target.x && next.y == target.y) {
-                cout << "Found target\n" << visited[node.x][node.y] + 1 << "\n";
+                cout << "Found target\n" << visited[node.x][node.y].cost + 1 << "\n";
             }
-            if (visited[next.x][next.y] == -1 ||
-                visited[node.x][node.y] + 1 < visited[next.x][next.y]) {
+            if (visited[next.x][next.y].cost == -1 ||
+                visited[node.x][node.y].cost + 1 < visited[next.x][next.y].cost) {
                 stack.push(next);
 
-                visited[next.x][next.y] = visited[node.x][node.y] + 1;
-
-                this_thread::sleep_for(chrono::milliseconds(500));
-                print(target, next, node, visited);
+                visited[next.x][next.y].cost = visited[node.x][node.y].cost + cost(i, visited[node.x][node.y].step + 1);
+                visited[next.x][next.y].step = visited[node.x][node.y].step + 1;
+                // this_thread::sleep_for(chrono::milliseconds(500));
+                // print(target, next, node, visited);
             }
         }
     }
@@ -150,7 +166,7 @@ int main() {
         cout << "\n";
     }
 
-    dfs(point{ 0, 0 }, point{ 1, 5 });
+    dfs(point{ 0, 0 }, point{ 5, 5 }, costs[3]);
 
     return 0;
 }
