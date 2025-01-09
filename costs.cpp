@@ -1,7 +1,6 @@
 #include <math.h>
 #include <bits/stdc++.h>
 
-#pragma once
 typedef std::function<float(int, int)> cost_fn;
 
 float c3(float t) {

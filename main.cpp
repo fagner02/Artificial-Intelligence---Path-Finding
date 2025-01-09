@@ -97,7 +97,6 @@ void calculate_path(point start, point target, visited_info visited[space_size][
     }
 }
 
-
 void dfs(point start, point target, cost_fn cost) {
     visited_info visited[space_size][space_size];
 
@@ -147,20 +146,22 @@ struct node {
 int main() {
     cout << "Hello, World!\n";
 
-    node nodes[space_size * space_size];
-    vector<vector<node>> graph(space_size * space_size, vector<node>());
+    map<point, vector<point>> graph;
 
-    int index = 0;
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
-            nodes[index].p = { i, j };
+            graph.insert({ {i, j}, {} });
+        }
+    }
 
+    for (int i = 0; i < space_size; i++) {
+        for (int j = 0; j < space_size; j++) {
             for (int k = 0; k < 4; k++) {
                 point next = { i + dirs[k].x, j + dirs[k].y };
                 if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                     continue;
                 }
-                graph[index].push_back(nodes[next.x * space_size + next.y]);
+                graph[{i, j}].push_back(next);
             }
         }
         cout << "\n";
