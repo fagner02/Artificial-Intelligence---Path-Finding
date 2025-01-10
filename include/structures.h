@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>
+// #include <SFML/Graphics.hpp>
 #include <rectshape.h>
 
 #pragma once
@@ -15,14 +15,14 @@ struct visited_info {
 };
 
 struct block {
-    sf::RoundedRectangleShape shape;
-    sf::Text text;
+    // sf::RoundedRectangleShape shape;
+    // sf::Text text;
     visited_info info;
 };
 
-struct label {
-    sf::Text text;
-    sf::RoundedRectangleShape box;
-};
+// struct label {
+//     sf::Text text;
+//     sf::RoundedRectangleShape box;
+// };
 
 bool operator==(const point& lhs, const point& rhs);

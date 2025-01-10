@@ -5,7 +5,7 @@
 #include <structures.h>
 #include <heuristics.h>
 #include <path_finding.h>
-#include <SFML/Graphics.hpp>
+// #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -21,7 +21,7 @@
 #include <fstream>
 
 using namespace std;
-
+/*
 void draw(
     sf::Vector2u& size,
     sf::RenderWindow& window,
@@ -91,6 +91,7 @@ auto create_label(
     pos.y += boxSize.y + 5;
     return _label;
 }
+*/
 
 int main() {
     cout << "Hello, World!\n";
@@ -118,8 +119,8 @@ int main() {
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
             blocks[i][j] = {
-                sf::RoundedRectangleShape(sf::Vector2f(50, 50), 10, 20),
-                sf::Text(),
+                // sf::RoundedRectangleShape(sf::Vector2f(50, 50), 10, 20),
+                // sf::Text(),
                 {-1, -1, -1}
             };
             // blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
