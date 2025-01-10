@@ -5,6 +5,6 @@
 
 typedef float (*heuristic_fn)(point, point);
 
-float h1(point a, point b);
+float heuristic1(point a, point b);
 
-float h2(point a, point b);
+float heuristic2(point a, point b);

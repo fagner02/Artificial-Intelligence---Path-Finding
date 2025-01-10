@@ -3,6 +3,7 @@
 #include <print.h>
 #include <rectshape.h>
 #include <structures.h>
+#include <heuristics.h>
 #include <path_finding.h>
 #include <SFML/Graphics.hpp>
 #include <algorithm>
@@ -134,7 +135,7 @@ int main() {
     texts[1] = create_label(font, pos, pad);
 
     thread t1([&]() {
-        a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], blocks, ref(shouldDraw));
+        a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], heuristic1, blocks, ref(shouldDraw));
         });
 
     while (window.isOpen()) {

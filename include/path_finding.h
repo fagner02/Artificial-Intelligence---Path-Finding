@@ -4,6 +4,7 @@
 #include <costs.h>
 #include <constants.h>
 #include <print.h>
+#include <heuristics.h>
 
 #pragma once
 
