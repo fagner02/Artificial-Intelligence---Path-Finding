@@ -18,4 +18,9 @@ struct block {
     visited_info info;
 };
 
+struct label {
+    sf::Text text;
+    sf::RoundedRectangleShape box;
+};
+
 bool operator==(const point& lhs, const point& rhs);

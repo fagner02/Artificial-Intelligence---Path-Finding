@@ -24,26 +24,39 @@ void draw(
     sf::RenderWindow& window,
     float& containerSize,
     float& blockSize,
-    block blocks[space_size][space_size]
+    block blocks[space_size][space_size],
+    label texts[]
 ) {
     window.clear(sf::Color(225, 225, 225));
 
     for (int y = 0; y < space_size; y++) {
         for (int x = 0; x < space_size; x++) {
             int yindex = space_size - y - 1;
-            blocks[x][y].shape.setPosition(
+            point pos = {
                 x * 50 + x * 10 + size.x / 2.0 - containerSize / 2.0,
-                yindex * 50 + yindex * 10 + size.y / 2.0 - containerSize / 2.0);
+                yindex * 50 + yindex * 10 + size.y / 2.0 - containerSize / 2.0
+            };
+
+            blocks[x][y].shape.setPosition(pos.x, pos.y);
             window.draw(blocks[x][y].shape);
+
             stringstream ss;
             ss << fixed << setprecision(0) << blocks[x][y].info.cost;
             blocks[x][y].text.setString(ss.str());
-            sf::Vector2f textSize = blocks[x][y].text.getGlobalBounds().getSize();
+
+            auto textSize = blocks[x][y].text.getGlobalBounds();
+
             blocks[x][y].text.setPosition(
-                x * 50 + x * 10 + size.x / 2.0 - containerSize / 2.0 + blockSize / 2.0 - textSize.x / 2.0 - 2,
-                yindex * 50 + yindex * 10 + size.y / 2.0 - containerSize / 2.0 + blockSize / 2.0 - textSize.y / 2.0 - 5);
+                pos.x + blockSize / 2.0 - textSize.width / 2.0,
+                pos.y + blockSize / 2.0 - textSize.height / 2.0
+            );
+
             window.draw(blocks[x][y].text);
         }
+    }
+    for (int i = 0; i < 2;i++) {
+        window.draw(texts[i].box);
+        window.draw(texts[i].text);
     }
     window.display();
 }
@@ -136,17 +149,45 @@ int main() {
 
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
-            blocks[i][j] = { sf::RoundedRectangleShape(sf::Vector2f(50, 50), 10, 20),
-                            sf::Text(),
-                            {-1, -1} };
+            blocks[i][j] = {
+                sf::RoundedRectangleShape(sf::Vector2f(50, 50), 10, 20),
+                sf::Text(),
+                {-1, -1}
+            };
             blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
             blocks[i][j].text.setFont(font);
             blocks[i][j].text.setFillColor(sf::Color(255, 255, 255));
+            blocks[i][j].text.setCharacterSize(18);
         }
     }
 
-    thread t1(dfs, point{ 0, 0 }, point{ 5, 5 }, costs[3], blocks,
-        ref(shouldDraw));
+    label texts[2];
+    sf::Vector2f pos(10, 10);
+
+    texts[0].text = (sf::Text());
+    texts[0].text.setFont(font);
+    texts[0].text.setString("scr");
+    texts[0].text.setCharacterSize(18);
+    auto textSize = texts[0].text.getGlobalBounds();
+    textSize.height *= 1;
+    auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height * 0.75 + pad * 2);
+
+    texts[0].box = sf::RoundedRectangleShape(boxSize, 10, 20);
+    texts[0].box.setFillColor(sf::Color(100, 100, 100));
+
+    texts[0].box.setPosition(pos);
+    texts[0].text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2 - textSize.width / 2, pos.y + boxSize.y / 2.0 - textSize.height * 1.25));
+
+
+    // pos.y += texts[0].getGlobalBounds().height + 10;
+    // texts[1] = (sf::Text());
+    // texts[1].setFont(font);
+    // texts[1].setString("scr");
+    // texts[1].setCharacterSize(18);
+    // texts[1].setFillColor(sf::Color::Black);
+    // texts[1].setPosition(pos);
+
+    thread t1(dfs, point{ 0, 0 }, point{ 5, 5 }, costs[3], blocks, ref(shouldDraw));
 
     while (window.isOpen()) {
         sf::Event event;
@@ -166,7 +207,7 @@ int main() {
         }
 
         if (shouldDraw) {
-            draw(size, window, containerSize, blockSize, blocks);
+            draw(size, window, containerSize, blockSize, blocks, texts);
             shouldDraw = false;
         }
     }
