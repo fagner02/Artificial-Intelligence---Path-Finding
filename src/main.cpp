@@ -96,7 +96,7 @@ void dfs(
                 }
                 shouldDraw = true;
 
-                this_thread::sleep_for(chrono::milliseconds(10000));
+                this_thread::sleep_for(chrono::milliseconds(50));
             }
         }
     }
