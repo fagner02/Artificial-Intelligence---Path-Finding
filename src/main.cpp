@@ -69,14 +69,11 @@ void set_block_colors(
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
             if (i == next.x && j == next.y) {
-                blocks[i][j].shape.setFillColor(
-                    sf::Color(255, 0, 0));
+                blocks[i][j].shape.setFillColor(sf::Color(255, 0, 0));
             } else if (blocks[i][j].info.cost != -1) {
-                blocks[i][j].shape.setFillColor(
-                    sf::Color(100, 200, 100));
+                blocks[i][j].shape.setFillColor(sf::Color(100, 200, 100));
             } else {
-                blocks[i][j].shape.setFillColor(
-                    sf::Color(100, 100, 100));
+                blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
             }
         }
     }
