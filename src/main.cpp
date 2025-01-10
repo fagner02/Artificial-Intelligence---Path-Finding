@@ -3,7 +3,6 @@
 #include <print.h>
 #include <rectshape.h>
 #include <structures.h>
-
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <chrono>
