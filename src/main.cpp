@@ -59,7 +59,9 @@ void dfs(
     point target,
     cost_fn cost,
     block blocks[space_size][space_size],
-    bool& shouldDraw
+    bool& shouldDraw,
+    bool& shouldClose,
+    bool& closed
 ) {
     stack<point> stack;
     stack.push(start);
@@ -97,6 +99,10 @@ void dfs(
                     }
                 }
                 shouldDraw = true;
+                if (shouldClose) {
+                    closed = true;
+                    return;
+                }
                 this_thread::sleep_for(chrono::milliseconds(100));
             }
         }
@@ -145,6 +151,8 @@ int main() {
     float containerSize = (pad * space_size + blockSize * space_size);
 
     bool shouldDraw = true;
+    bool shouldClose = false;
+    bool closed = false;
 
     block blocks[space_size][space_size];
 
@@ -158,15 +166,16 @@ int main() {
     }
 
     auto a2 = std::async(std::launch::async, [&]() {
-        dfs(point{ 0, 0 }, point{ 5, 5 }, costs[3], blocks, shouldDraw);
+        dfs(point{ 0, 0 }, point{ 5, 5 }, costs[3], blocks, shouldDraw, shouldClose, closed);
         });
     while (window.isOpen()) {
         sf::Event event;
-
+        if (closed) {
+            window.close();
+        }
         while (window.pollEvent(event) || shouldDraw) {
             if (event.type == sf::Event::Closed) {
-                window.close();
-                std::terminate();
+                shouldClose = true;
             }
             if (event.type == sf::Event::Resized) {
                 size = window.getSize();
