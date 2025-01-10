@@ -124,6 +124,34 @@ void dfs(
     calculate_path(start, target, blocks, target, shouldDraw);
 }
 
+auto create_label(
+    sf::Font& font,
+    sf::Vector2f& pos,
+    float pad
+) {
+
+    label _label = {
+        sf::Text(),
+        sf::RoundedRectangleShape()
+    };
+    _label.text = (sf::Text());
+    _label.text.setFont(font);
+    _label.text.setString("scr");
+    _label.text.setCharacterSize(18);
+    auto textSize = _label.text.getGlobalBounds();
+    textSize.height *= 1;
+
+    auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height * 0.75 + pad * 2);
+
+    _label.box = sf::RoundedRectangleShape(boxSize, 10, 20);
+    _label.box.setFillColor(sf::Color(100, 100, 100));
+
+    _label.box.setPosition(pos);
+    _label.text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2 - textSize.width / 2, pos.y + boxSize.y / 2.0 - textSize.height * 1.25));
+    pos.y += boxSize.y + 5;
+    return _label;
+}
+
 int main() {
     cout << "Hello, World!\n";
 
@@ -164,19 +192,21 @@ int main() {
     label texts[2];
     sf::Vector2f pos(10, 10);
 
-    texts[0].text = (sf::Text());
-    texts[0].text.setFont(font);
-    texts[0].text.setString("scr");
-    texts[0].text.setCharacterSize(18);
-    auto textSize = texts[0].text.getGlobalBounds();
-    textSize.height *= 1;
-    auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height * 0.75 + pad * 2);
+    texts[0] = create_label(font, pos, pad);
+    texts[1] = create_label(font, pos, pad);
+    // texts[0].text = (sf::Text());
+// texts[0].text.setFont(font);
+    // texts[0].text.setString("scr");
+    // texts[0].text.setCharacterSize(18);
+    // auto textSize = texts[0].text.getGlobalBounds();
+    // textSize.height *= 1;
+    // auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height * 0.75 + pad * 2);
 
-    texts[0].box = sf::RoundedRectangleShape(boxSize, 10, 20);
-    texts[0].box.setFillColor(sf::Color(100, 100, 100));
+    // texts[0].box = sf::RoundedRectangleShape(boxSize, 10, 20);
+    // texts[0].box.setFillColor(sf::Color(100, 100, 100));
 
-    texts[0].box.setPosition(pos);
-    texts[0].text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2 - textSize.width / 2, pos.y + boxSize.y / 2.0 - textSize.height * 1.25));
+    // texts[0].box.setPosition(pos);
+    // texts[0].text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2 - textSize.width / 2, pos.y + boxSize.y / 2.0 - textSize.height * 1.25));
 
 
     // pos.y += texts[0].getGlobalBounds().height + 10;
