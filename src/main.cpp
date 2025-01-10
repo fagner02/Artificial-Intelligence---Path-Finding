@@ -133,7 +133,7 @@ int main() {
     texts[0] = create_label(font, pos, pad);
     texts[1] = create_label(font, pos, pad);
 
-    thread t1(dfs, point{ 0, 0 }, point{ 5, 5 }, costs[3], blocks, ref(shouldDraw));
+    thread t1(dfs, point{ 0, 0 }, point{ 5, 3 }, costs[3], blocks, ref(shouldDraw));
 
     while (window.isOpen()) {
         sf::Event event;

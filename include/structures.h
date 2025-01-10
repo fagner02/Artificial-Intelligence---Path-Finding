@@ -10,6 +10,7 @@ struct point {
 struct visited_info {
     float cost;
     int step;
+    point from;
 };
 
 struct block {

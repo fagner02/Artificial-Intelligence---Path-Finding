@@ -46,10 +46,13 @@ void set_path_block_colors(
         for (int x = 0; x < space_size; x++) {
             point p = { x, y };
             auto it = std::find(path.begin(), path.end(), p);
+            auto yindex = y;
             if (it != path.end()) {
-                blocks[y][x].shape.setFillColor(sf::Color(100, 100, 200));
+                blocks[x][yindex].shape.setFillColor(sf::Color(100, 100, 200));
+            } else if (blocks[x][yindex].info.cost != -1) {
+                blocks[x][yindex].shape.setFillColor(sf::Color(100, 200, 100));
             } else {
-                blocks[y][x].shape.setFillColor(sf::Color(100, 200, 100));
+                blocks[x][yindex].shape.setFillColor(sf::Color(100, 100, 100));
             }
         }
     }
@@ -57,28 +60,12 @@ void set_path_block_colors(
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
-void calculate_path(point start, point target, block blocks[space_size][space_size], point next, bool& shouldDraw) {
-    std::vector<point> path = { target };
+void calculate_path(point start, point target, block blocks[space_size][space_size], bool& shouldDraw) {
+    std::vector<point> path = {  };
 
-    while (target.x != start.x || target.y != start.y) {
-        std::cout << target.x << "," << target.y << "\n";
-        point last = target;
-        bool assigned = false;
-        for (int i = 0; i < 4; i++) {
-            point next = { last.x + dirs[i].x, last.y + dirs[i].y };
-            if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
-                continue;
-            }
-            if (!assigned) {
-                target = next;
-                assigned = true;
-            } else {
-                if (blocks[next.x][next.y].info.cost < blocks[target.x][target.y].info.cost) {
-                    target = next;
-                }
-            }
-        }
+    while (target.x != -1 && target.y != -1) {
         path.push_back(target);
+        target = blocks[target.x][target.y].info.from;
         set_path_block_colors(blocks, path, shouldDraw);
     }
 }
@@ -102,6 +89,6 @@ void set_block_colors(
     }
     shouldDraw = true;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 }
