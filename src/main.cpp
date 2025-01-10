@@ -116,24 +116,6 @@ int main() {
 
     std::map<pair<int, int>, std::vector<point>> graph;
 
-    for (int i = 0; i < space_size; i++) {
-        for (int j = 0; j < space_size; j++) {
-            graph.insert({ {i, j}, {} });
-        }
-    }
-
-    for (int i = 0; i < space_size; i++) {
-        for (int j = 0; j < space_size; j++) {
-            for (int k = 0; k < 4; k++) {
-                point next = { i + dirs[k].x, j + dirs[k].y };
-                if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
-                    continue;
-                }
-                graph[{i, j}].push_back(next);
-            }
-        }
-    }
-
     font = sf::Font();
     if (!font.loadFromFile("./assets/Roboto-Regular.ttf")) {
         cout << "Error loading font\n";
