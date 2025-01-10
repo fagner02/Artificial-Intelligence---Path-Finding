@@ -3,6 +3,7 @@
 #include <print.h>
 #include <rectshape.h>
 #include <structures.h>
+#include <path_finding.h>
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <chrono>
@@ -59,66 +60,6 @@ void draw(
         window.draw(texts[i].text);
     }
     window.display();
-}
-
-void set_block_colors(
-    block blocks[space_size][space_size],
-    point next,
-    bool& shouldDraw
-) {
-    for (int i = 0; i < space_size; i++) {
-        for (int j = 0; j < space_size; j++) {
-            if (i == next.x && j == next.y) {
-                blocks[i][j].shape.setFillColor(sf::Color(255, 0, 0));
-            } else if (blocks[i][j].info.cost != -1) {
-                blocks[i][j].shape.setFillColor(sf::Color(100, 200, 100));
-            } else {
-                blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
-            }
-        }
-    }
-    shouldDraw = true;
-
-    this_thread::sleep_for(chrono::milliseconds(10));
-
-}
-
-void dfs(
-    point start,
-    point target,
-    cost_fn cost,
-    block blocks[space_size][space_size], bool& shouldDraw
-) {
-    stack<point> stack;
-    stack.push(start);
-    blocks[start.x][start.y].info.cost = 0;
-    blocks[start.x][start.y].info.step = 0;
-    while (!stack.empty()) {
-        point node = stack.top();
-        stack.pop();
-
-        for (int i = 0; i < 4; i++) {
-            point next = { node.x + dirs[i].x, node.y + dirs[i].y };
-            if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
-                continue;
-            }
-            if (next.x == target.x && next.y == target.y) {
-                cout << "Found target\n"
-                    << blocks[node.x][node.y].info.cost + 1 << "\n";
-            }
-            float costValue = cost(i, blocks[node.x][node.y].info.step + 1);
-            if (blocks[next.x][next.y].info.cost == -1 || blocks[node.x][node.y].info.cost + costValue < blocks[next.x][next.y].info.cost) {
-                stack.push(next);
-
-                blocks[next.x][next.y].info.cost = blocks[node.x][node.y].info.cost + costValue;
-                blocks[next.x][next.y].info.step = blocks[node.x][node.y].info.step + 1;
-
-                set_block_colors(blocks, next, shouldDraw);
-            }
-        }
-    }
-
-    calculate_path(start, target, blocks, target, shouldDraw);
 }
 
 auto create_label(

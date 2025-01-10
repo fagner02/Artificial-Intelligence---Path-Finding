@@ -1,6 +1,8 @@
 #include <functional>
 #include <math.h>
 
+#pragma once
+
 float c3(float t);
 
 float c4(float t);
