@@ -1,5 +1,6 @@
 
 #include <path_finding.h>
+#include <heuristics.h>
 
 void dfs(
     point start,
@@ -46,11 +47,7 @@ void dfs(
     calculate_path(start, target, blocks, shouldDraw);
 }
 
-float heuristic(point a, point b) {
-    return 0;
-}
-
-void a_star(point start, point target, cost_fn cost, block nodes[space_size][space_size], bool& shouldDraw) {
+void a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, block nodes[space_size][space_size], bool& shouldDraw) {
     vector<point> open;
     vector<point> closed;
 
@@ -73,7 +70,7 @@ void a_star(point start, point target, cost_fn cost, block nodes[space_size][spa
         closed.push_back(current);
 
         if (current.x == target.x && current.y == target.y) {
-            cout << "Found target\n";;
+            cout << "Found target\n";
             calculate_path(start, target, nodes, shouldDraw);
             return;
         }
@@ -83,7 +80,6 @@ void a_star(point start, point target, cost_fn cost, block nodes[space_size][spa
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
-
 
             if (find(closed.begin(), closed.end(), next) != closed.end()) {
                 continue;

@@ -29,6 +29,7 @@ void a_star(
     point start,
     point target,
     cost_fn cost,
+    heuristic_fn heuristic,
     block nodes[space_size][space_size],
     bool& shouldDraw
 );
@@ -41,4 +42,11 @@ void dijkstra(
     bool& shouldDraw
 );
 
-void greedy_search();
+void greedy_search(
+    point start,
+    point target,
+    cost_fn cost,
+    heuristic_fn heuristic,
+    block nodes[space_size][space_size],
+    bool& shouldDraw
+);
