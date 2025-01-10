@@ -154,6 +154,7 @@ int main() {
         sf::Event event;
         if (closed) {
             window.close();
+            std::terminate();
         }
         while (window.pollEvent(event) || shouldDraw) {
             if (event.type == sf::Event::Closed) {
@@ -167,7 +168,6 @@ int main() {
 
             draw(size, window, containerSize, blockSize, blocks);
             shouldDraw = false;
-
         }
     }
     return 0;
