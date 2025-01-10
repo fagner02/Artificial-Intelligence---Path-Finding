@@ -21,8 +21,6 @@
 
 using namespace std;
 
-sf::Font font;
-
 void draw(
     sf::Vector2u& size,
     sf::RenderWindow& window,
@@ -59,9 +57,7 @@ void dfs(
     point target,
     cost_fn cost,
     block blocks[space_size][space_size],
-    bool& shouldDraw,
-    bool& shouldClose,
-    bool& closed
+    bool& shouldDraw
 ) {
     stack<point> stack;
     stack.push(start);
@@ -99,11 +95,8 @@ void dfs(
                     }
                 }
                 shouldDraw = true;
-                if (shouldClose) {
-                    closed = true;
-                    return;
-                }
-                this_thread::sleep_for(chrono::milliseconds(100));
+
+                this_thread::sleep_for(chrono::milliseconds(10000));
             }
         }
     }
@@ -114,18 +107,15 @@ void dfs(
 int main() {
     cout << "Hello, World!\n";
 
-    std::map<pair<int, int>, std::vector<point>> graph;
-
-    font = sf::Font();
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 8;
+    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "My window", sf::Style::Default, settings);
+    auto font = sf::Font();
     if (!font.loadFromFile("./assets/Roboto-Regular.ttf")) {
         cout << "Error loading font\n";
     } else {
         cout << "Font loaded\n";
     }
-
-    sf::ContextSettings settings;
-    settings.antialiasingLevel = 8;
-    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "My window", sf::Style::Default, settings);
 
     sf::Vector2u size = window.getSize();
     float blockSize = 50;
@@ -133,8 +123,6 @@ int main() {
     float containerSize = (pad * space_size + blockSize * space_size);
 
     bool shouldDraw = true;
-    bool shouldClose = false;
-    bool closed = false;
 
     block blocks[space_size][space_size];
 
@@ -147,18 +135,15 @@ int main() {
         }
     }
 
-    auto a2 = std::async(std::launch::async, [&]() {
-        dfs(point{ 0, 0 }, point{ 5, 5 }, costs[3], blocks, shouldDraw, shouldClose, closed);
-        });
+    thread t1(dfs, point{ 0, 0 }, point{ 5, 5 }, costs[0], blocks, ref(shouldDraw));
+
     while (window.isOpen()) {
         sf::Event event;
-        if (closed) {
-            window.close();
-            std::terminate();
-        }
-        while (window.pollEvent(event) || shouldDraw) {
+
+        while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                shouldClose = true;
+                window.close();
+                terminate();
             }
             if (event.type == sf::Event::Resized) {
                 size = window.getSize();
@@ -166,6 +151,10 @@ int main() {
                 window.setView(view);
             }
 
+            shouldDraw = true;
+        }
+
+        if (shouldDraw) {
             draw(size, window, containerSize, blockSize, blocks);
             shouldDraw = false;
         }
