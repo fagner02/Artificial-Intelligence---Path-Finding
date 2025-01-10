@@ -194,28 +194,6 @@ int main() {
 
     texts[0] = create_label(font, pos, pad);
     texts[1] = create_label(font, pos, pad);
-    // texts[0].text = (sf::Text());
-// texts[0].text.setFont(font);
-    // texts[0].text.setString("scr");
-    // texts[0].text.setCharacterSize(18);
-    // auto textSize = texts[0].text.getGlobalBounds();
-    // textSize.height *= 1;
-    // auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height * 0.75 + pad * 2);
-
-    // texts[0].box = sf::RoundedRectangleShape(boxSize, 10, 20);
-    // texts[0].box.setFillColor(sf::Color(100, 100, 100));
-
-    // texts[0].box.setPosition(pos);
-    // texts[0].text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2 - textSize.width / 2, pos.y + boxSize.y / 2.0 - textSize.height * 1.25));
-
-
-    // pos.y += texts[0].getGlobalBounds().height + 10;
-    // texts[1] = (sf::Text());
-    // texts[1].setFont(font);
-    // texts[1].setString("scr");
-    // texts[1].setCharacterSize(18);
-    // texts[1].setFillColor(sf::Color::Black);
-    // texts[1].setPosition(pos);
 
     thread t1(dfs, point{ 0, 0 }, point{ 5, 5 }, costs[3], blocks, ref(shouldDraw));
 
