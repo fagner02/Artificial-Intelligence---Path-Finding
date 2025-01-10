@@ -1,22 +1,22 @@
 #include <print.h>
 
-void print_path(std::vector<point>& path, visited_info visited[space_size][space_size]) {
+void print_path(std::vector<point>& path, block visited[space_size][space_size]) {
     std::cout << "\x1b[H\x1b[J" << std::flush;
     for (int y = space_size - 1; y > -1; y--) {
         for (int x = 0; x < space_size; x++) {
             point p = { x, y };
             auto it = std::find(path.begin(), path.end(), p);
             if (it != path.end()) {
-                std::cout << "\033[32;1m" << std::setw(4) << visited[x][y].cost << "\033[0m" << std::setw(4) << " | ";
+                std::cout << "\033[32;1m" << std::setw(4) << visited[x][y].info.cost << "\033[0m" << std::setw(4) << " | ";
             } else {
-                std::cout << std::setw(4) << visited[x][y].cost << std::setw(4) << " | ";
+                std::cout << std::setw(4) << visited[x][y].info.cost << std::setw(4) << " | ";
             }
         }
         std::cout << "\n";
     }
 }
 
-void print(point target, point next, point prev, visited_info visited[space_size][space_size]) {
+void print(point target, point next, point prev, block visited[space_size][space_size]) {
     std::cout << "\x1b[H\x1b[J" << std::flush;
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
@@ -26,10 +26,10 @@ void print(point target, point next, point prev, visited_info visited[space_size
                 std::cout << "\033[1;31m" << std::setw(4) << "P" << "\033[0m" << std::setw(4) << " | ";
             } else if (i == target.x && j == target.y) {
                 std::cout << std::setw(4) << "T" << std::setw(4) << " | ";
-            } else if (visited[i][j].cost == -1) {
-                std::cout << std::setw(4) << visited[i][j].cost << std::setw(4) << " | ";
+            } else if (visited[i][j].info.cost == -1) {
+                std::cout << std::setw(4) << visited[i][j].info.cost << std::setw(4) << " | ";
             } else {
-                std::cout << "\033[1;32m" << std::setw(4) << visited[i][j].cost << "\033[0m" << std::setw(4) << " | ";
+                std::cout << "\033[1;32m" << std::setw(4) << visited[i][j].info.cost << "\033[0m" << std::setw(4) << " | ";
             }
         }
         std::cout << "\n";
@@ -37,7 +37,7 @@ void print(point target, point next, point prev, visited_info visited[space_size
     std::cout << "\n";
 }
 
-void calculate_path(point start, point target, visited_info visited[space_size][space_size]) {
+void calculate_path(point start, point target, block visited[space_size][space_size]) {
     std::vector<point> path = { target };
 
     while (target.x != start.x || target.y != start.y) {
@@ -53,7 +53,7 @@ void calculate_path(point start, point target, visited_info visited[space_size][
                 target = next;
                 assigned = true;
             } else {
-                if (visited[next.x][next.y].cost < visited[target.x][target.y].cost) {
+                if (visited[next.x][next.y].info.cost < visited[target.x][target.y].info.cost) {
                     target = next;
                 }
             }

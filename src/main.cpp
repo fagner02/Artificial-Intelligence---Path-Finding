@@ -12,23 +12,59 @@
 #include <constants.h>
 #include <costs.h>
 #include <print.h>
+#include <SFML/Graphics.hpp>
+#include <optional>
+#include <rectshape.h>
+#include <chrono>
+#include <thread>
+#include <future>
 
 using namespace std;
 
-void dfs(point start, point target, cost_fn cost) {
-    visited_info visited[space_size][space_size];
+sf::Font font;
+
+void draw(
+    sf::Vector2u& size,
+    sf::RenderWindow& window,
+    float& containerSize,
+    float& blockSize,
+    block blocks[space_size][space_size]
+) {
+    window.clear(sf::Color(225, 225, 225));
 
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
-            visited[i][j].cost = -1;
-            visited[i][j].step = -1;
+            blocks[i][j].shape.setPosition(
+                i * 50 + i * 10 + size.x / 2.0 - containerSize / 2.0,
+                j * 50 + j * 10 + size.y / 2.0 - containerSize / 2.0
+            );
+            window.draw(blocks[i][j].shape);
+            stringstream ss;
+            ss << fixed << setprecision(0) << blocks[i][j].info.cost;
+            blocks[i][j].text.setString(ss.str());
+            sf::Vector2f textSize = blocks[i][j].text.getGlobalBounds().getSize();
+            blocks[i][j].text.setPosition(
+                i * 50 + i * 10 + size.x / 2.0 - containerSize / 2.0 + blockSize / 2.0 - textSize.x / 2.0 - 2,
+                j * 50 + j * 10 + size.y / 2.0 - containerSize / 2.0 + blockSize / 2.0 - textSize.y / 2.0 - 5
+            );
+            window.draw(blocks[i][j].text);
         }
     }
+    window.display();
+}
 
+
+void dfs(
+    point start,
+    point target,
+    cost_fn cost,
+    block blocks[space_size][space_size],
+    bool& shouldDraw
+) {
     stack<point> stack;
     stack.push(start);
-    visited[start.x][start.y].cost = 0;
-    visited[start.x][start.y].step = 0;
+    blocks[start.x][start.y].info.cost = 0;
+    blocks[start.x][start.y].info.step = 0;
     while (!stack.empty()) {
         point node = stack.top();
         stack.pop();
@@ -39,27 +75,35 @@ void dfs(point start, point target, cost_fn cost) {
                 continue;
             }
             if (next.x == target.x && next.y == target.y) {
-                cout << "Found target\n" << visited[node.x][node.y].cost + 1 << "\n";
+                cout << "Found target\n" << blocks[node.x][node.y].info.cost + 1 << "\n";
             }
-            if (visited[next.x][next.y].cost == -1 ||
-                visited[node.x][node.y].cost + 1 < visited[next.x][next.y].cost) {
+            float costValue = cost(i, blocks[node.x][node.y].info.step + 1);
+            if (blocks[next.x][next.y].info.cost == -1 ||
+                blocks[node.x][node.y].info.cost + costValue < blocks[next.x][next.y].info.cost) {
                 stack.push(next);
 
-                visited[next.x][next.y].cost = visited[node.x][node.y].cost + cost(i, visited[node.x][node.y].step + 1);
-                visited[next.x][next.y].step = visited[node.x][node.y].step + 1;
-                // this_thread::sleep_for(chrono::milliseconds(500));
-                // print(target, next, node, visited);
+                blocks[next.x][next.y].info.cost = blocks[node.x][node.y].info.cost + costValue;
+                blocks[next.x][next.y].info.step = blocks[node.x][node.y].info.step + 1;
+
+                for (int i = 0; i < space_size; i++) {
+                    for (int j = 0; j < space_size; j++) {
+                        if (i == next.x && j == next.y) {
+                            blocks[i][j].shape.setFillColor(sf::Color(255, 0, 0));
+                        } else if (blocks[i][j].info.cost != -1) {
+                            blocks[i][j].shape.setFillColor(sf::Color(100, 200, 100));
+                        } else {
+                            blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
+                        }
+                    }
+                }
+                shouldDraw = true;
+                this_thread::sleep_for(chrono::milliseconds(100));
             }
         }
     }
 
-    calculate_path(start, target, visited);
+    calculate_path(start, target, blocks);
 }
-
-struct node {
-    point p;
-    string label;
-};
 
 int main() {
     cout << "Hello, World!\n";
@@ -84,7 +128,57 @@ int main() {
         }
     }
 
-    dfs(point{ 0, 0 }, point{ 5, 5 }, costs[3]);
+    font = sf::Font();
+    if (!font.loadFromFile("./assets/Roboto-Regular.ttf")) {
+        cout << "Error loading font\n";
+    } else {
+        cout << "Font loaded\n";
+    }
 
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 8;
+    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "My window", sf::Style::Default, settings);
+
+    sf::Vector2u size = window.getSize();
+    float blockSize = 50;
+    float pad = 10;
+    float containerSize = (pad * space_size + blockSize * space_size);
+
+    bool shouldDraw = true;
+
+    block blocks[space_size][space_size];
+
+    for (int i = 0; i < space_size; i++) {
+        for (int j = 0; j < space_size; j++) {
+            blocks[i][j] = { sf::RoundedRectangleShape(sf::Vector2f(50, 50), 10, 20), sf::Text(), {-1,-1} };
+            blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
+            blocks[i][j].text.setFont(font);
+            blocks[i][j].text.setFillColor(sf::Color(255, 255, 255));
+        }
+    }
+
+    auto a2 = std::async(std::launch::async, [&]() {
+        dfs(point{ 0, 0 }, point{ 5, 5 }, costs[3], blocks, shouldDraw);
+        });
+    while (window.isOpen()) {
+        sf::Event event;
+
+        while (window.pollEvent(event) || shouldDraw) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+                std::terminate();
+            }
+            if (event.type == sf::Event::Resized) {
+                size = window.getSize();
+                sf::View view(sf::FloatRect(0, 0, size.x, size.y));
+                window.setView(view);
+            }
+
+            draw(size, window, containerSize, blockSize, blocks);
+            shouldDraw = false;
+
+        }
+    }
     return 0;
 }
+

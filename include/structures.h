@@ -1,3 +1,6 @@
+#include <SFML/Graphics.hpp>
+#include <rectshape.h>
+
 #pragma once
 
 struct point {
@@ -7,6 +10,12 @@ struct point {
 struct visited_info {
     float cost;
     int step;
+};
+
+struct block {
+    sf::RoundedRectangleShape shape;
+    sf::Text text;
+    visited_info info;
 };
 
 bool operator==(const point& lhs, const point& rhs);
