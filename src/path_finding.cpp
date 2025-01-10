@@ -50,41 +50,22 @@ float heuristic(point a, point b) {
     return 0;
 }
 
-struct a_star_node {
-    point pos;
-    float cost;
-    float heuristic;
-    float step;
-};
-
-void a_star(point start, point target, cost_fn cost) {
+void a_star(point start, point target, cost_fn cost, block nodes[space_size][space_size], bool& shouldDraw) {
     vector<point> open;
     vector<point> closed;
 
-    a_star_node nodes[space_size][space_size];
-
-    for (int i = 0; i < space_size; i++) {
-        for (int j = 0; j < space_size; j++) {
-            nodes[i][j] = {
-                {i, j},
-                -1,
-                -1,
-                -1
-            };
-        }
-    }
-
-    nodes[start.x][start.y].cost = 0;
-    nodes[start.x][start.y].heuristic = heuristic(start, target);
-    nodes[start.x][start.y].step = 0;
+    nodes[start.x][start.y].info.cost = 0;
+    nodes[start.x][start.y].info.heuristic = heuristic(start, target);
+    nodes[start.x][start.y].info.step = 0;
+    nodes[start.x][start.y].info.from = { -1, -1 };
 
     open.push_back(start);
 
     while (!open.empty()) {
         auto min = min_element(open.begin(), open.end(), [&](point a, point b) {
-            a_star_node nodeA = nodes[a.x][a.y];
-            a_star_node nodeB = nodes[b.x][b.y];
-            return nodeA.cost + heuristic(a, target) < nodeB.cost + heuristic(b, target);
+            block nodeA = nodes[a.x][a.y];
+            block nodeB = nodes[b.x][b.y];
+            return nodeA.info.cost + heuristic(a, target) < nodeB.info.cost + heuristic(b, target);
             });
         point current = *min;
         open.erase(min);
@@ -92,8 +73,9 @@ void a_star(point start, point target, cost_fn cost) {
         closed.push_back(current);
 
         if (current.x == target.x && current.y == target.y) {
-            cout << "Found target\n";
-            break;
+            cout << "Found target\n";;
+            calculate_path(start, target, nodes, shouldDraw);
+            return;
         }
 
         for (int i = 0; i < 4; i++) {
@@ -103,26 +85,24 @@ void a_star(point start, point target, cost_fn cost) {
             }
 
 
-            nodes[next.x][next.y].step = nodes[current.x][current.y].step + 1;
-            nodes[next.x][next.y].cost = nodes[current.x][current.y].cost + cost(i, nodes[next.x][next.y].step);
-            nodes[next.x][next.y].heuristic = heuristic(next, target);
-
             if (find(closed.begin(), closed.end(), next) != closed.end()) {
                 continue;
             }
+            float new_cost = nodes[current.x][current.y].info.cost + cost(i, nodes[current.x][current.y].info.step + 1);
 
-            float costValue = 1;
-            if (find(open.begin(), open.end(), next) == open.end()) {
+            auto found = find(open.begin(), open.end(), next);
+            if (found == open.end()) {
                 open.push_back(next);
+            } else if (new_cost >= nodes[next.x][next.y].info.cost) {
+                continue;
             }
 
-            if (current.x != start.x && current.y != start.y) {
-                costValue = 1.4;
-            }
+            nodes[next.x][next.y].info.step = nodes[current.x][current.y].info.step + 1;
+            nodes[next.x][next.y].info.cost = new_cost;
+            nodes[next.x][next.y].info.heuristic = heuristic(next, target);
+            nodes[next.x][next.y].info.from = current;
 
-            if (current.x != target.x && current.y != target.y) {
-                costValue = 1.4;
-            }
+            set_block_colors(nodes, next, shouldDraw);
         }
     }
 }

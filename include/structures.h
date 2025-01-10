@@ -9,6 +9,7 @@ struct point {
 
 struct visited_info {
     float cost;
+    float heuristic;
     int step;
     point from;
 };

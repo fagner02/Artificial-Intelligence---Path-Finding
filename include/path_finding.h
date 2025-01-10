@@ -13,13 +13,32 @@ void dfs(
     point start,
     point target,
     cost_fn cost,
-    block blocks[space_size][space_size], bool& shouldDraw
+    block blocks[space_size][space_size],
+    bool& shouldDraw
 );
 
-void bfs();
+void bfs(
+    point start,
+    point target,
+    cost_fn cost,
+    block blocks[space_size][space_size],
+    bool& shouldDraw
+);
 
-void a_star();
+void a_star(
+    point start,
+    point target,
+    cost_fn cost,
+    block nodes[space_size][space_size],
+    bool& shouldDraw
+);
 
-void dijkstra();
+void dijkstra(
+    point start,
+    point target,
+    cost_fn cost,
+    block blocks[space_size][space_size],
+    bool& shouldDraw
+);
 
 void greedy_search();
