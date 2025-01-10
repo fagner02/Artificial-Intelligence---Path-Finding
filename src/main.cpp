@@ -49,6 +49,31 @@ void draw(
     window.display();
 }
 
+void set_block_colors(
+    block blocks[space_size][space_size],
+    point next,
+    bool& shouldDraw
+) {
+    for (int i = 0; i < space_size; i++) {
+        for (int j = 0; j < space_size; j++) {
+            if (i == next.x && j == next.y) {
+                blocks[i][j].shape.setFillColor(
+                    sf::Color(255, 0, 0));
+            } else if (blocks[i][j].info.cost != -1) {
+                blocks[i][j].shape.setFillColor(
+                    sf::Color(100, 200, 100));
+            } else {
+                blocks[i][j].shape.setFillColor(
+                    sf::Color(100, 100, 100));
+            }
+        }
+    }
+    shouldDraw = true;
+
+    this_thread::sleep_for(chrono::milliseconds(10));
+
+}
+
 void dfs(
     point start,
     point target,
@@ -79,23 +104,7 @@ void dfs(
                 blocks[next.x][next.y].info.cost = blocks[node.x][node.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[node.x][node.y].info.step + 1;
 
-                for (int i = 0; i < space_size; i++) {
-                    for (int j = 0; j < space_size; j++) {
-                        if (i == next.x && j == next.y) {
-                            blocks[i][j].shape.setFillColor(
-                                sf::Color(255, 0, 0));
-                        } else if (blocks[i][j].info.cost != -1) {
-                            blocks[i][j].shape.setFillColor(
-                                sf::Color(100, 200, 100));
-                        } else {
-                            blocks[i][j].shape.setFillColor(
-                                sf::Color(100, 100, 100));
-                        }
-                    }
-                }
-                shouldDraw = true;
-
-                this_thread::sleep_for(chrono::milliseconds(10));
+                set_block_colors(blocks, next, shouldDraw);
             }
         }
     }
