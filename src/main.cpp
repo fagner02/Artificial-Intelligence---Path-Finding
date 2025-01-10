@@ -24,7 +24,7 @@ void draw(
     sf::Vector2u& size,
     sf::RenderWindow& window,
     float& containerSize,
-    float& blockSize, 
+    float& blockSize,
     block blocks[space_size][space_size]
 ) {
     window.clear(sf::Color(225, 225, 225));
@@ -95,7 +95,7 @@ void dfs(
                 }
                 shouldDraw = true;
 
-                this_thread::sleep_for(chrono::milliseconds(50));
+                this_thread::sleep_for(chrono::milliseconds(10));
             }
         }
     }

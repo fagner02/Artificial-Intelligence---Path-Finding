@@ -59,21 +59,19 @@ void calculate_path(point start, point target, block blocks[space_size][space_si
             }
         }
         path.push_back(target);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         for (int y = 0; y < space_size; y++) {
             for (int x = 0; x < space_size; x++) {
                 point p = { x, y };
                 auto it = std::find(path.begin(), path.end(), p);
                 if (it != path.end()) {
-                    blocks[y][x].shape.setFillColor(sf::Color(255, 0, 0));
+                    blocks[y][x].shape.setFillColor(sf::Color(100, 100, 200));
                 } else {
-                    blocks[y][x].shape.setFillColor(sf::Color(100, 100, 100));
+                    blocks[y][x].shape.setFillColor(sf::Color(100, 200, 100));
                 }
             }
         }
         shouldDraw = true;
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
