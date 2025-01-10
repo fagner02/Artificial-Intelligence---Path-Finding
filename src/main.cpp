@@ -18,6 +18,7 @@
 #include <thread>
 #include <tuple>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -94,21 +95,21 @@ auto create_label(
 int main() {
     cout << "Hello, World!\n";
 
-    sf::ContextSettings settings;
-    settings.antialiasingLevel = 5;
-    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "My window",
-        sf::Style::Default, settings);
-    auto font = sf::Font();
-    if (!font.loadFromFile("./assets/Roboto-Regular.ttf")) {
-        cout << "Error loading font\n";
-    } else {
-        cout << "Font loaded\n";
-    }
+    // sf::ContextSettings settings;
+    // settings.antialiasingLevel = 5;
+    // sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "My window",
+    //     sf::Style::Default, settings);
+    // auto font = sf::Font();
+    // if (!font.loadFromFile("./assets/Roboto-Regular.ttf")) {
+    //     cout << "Error loading font\n";
+    // } else {
+    //     cout << "Font loaded\n";
+    // }
 
-    sf::Vector2u size = window.getSize();
-    float blockSize = 50;
-    float pad = 10;
-    float containerSize = (pad * space_size + blockSize * space_size);
+    // sf::Vector2u size = window.getSize();
+    // float blockSize = 50;
+    // float pad = 10;
+    // float containerSize = (pad * space_size + blockSize * space_size);
 
     bool shouldDraw = true;
 
@@ -121,44 +122,44 @@ int main() {
                 sf::Text(),
                 {-1, -1, -1}
             };
-            blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
-            blocks[i][j].text.setFont(font);
-            blocks[i][j].text.setFillColor(sf::Color(255, 255, 255));
-            blocks[i][j].text.setCharacterSize(18);
+            // blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
+            // // blocks[i][j].text.setFont(font);
+            // blocks[i][j].text.setFillColor(sf::Color(255, 255, 255));
+            // blocks[i][j].text.setCharacterSize(18);
         }
     }
 
-    label texts[2];
-    sf::Vector2f pos(10, 10);
+    // label texts[2];
+    // sf::Vector2f pos(10, 10);
 
-    texts[0] = create_label(font, pos, pad);
-    texts[1] = create_label(font, pos, pad);
+    // texts[0] = create_label(font, pos, pad);
+    // texts[1] = create_label(font, pos, pad);
+    ofstream file("log.csv");
 
-    thread t1([&]() {
-        a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], heuristic0, blocks, ref(shouldDraw));
-        });
-
-    while (window.isOpen()) {
-        sf::Event event;
-
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-                terminate();
-            }
-            if (event.type == sf::Event::Resized) {
-                size = window.getSize();
-                sf::View view(sf::FloatRect(0, 0, size.x, size.y));
-                window.setView(view);
-            }
-
-            shouldDraw = true;
-        }
-
-        if (shouldDraw) {
-            draw(size, window, containerSize, blockSize, blocks, texts);
-            shouldDraw = false;
-        }
+    for (int i = 0; i < 50; i++) {
+        file << a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], heuristic1, blocks, ref(shouldDraw)) << "\n";
     }
+    // while (window.isOpen()) {
+    //     sf::Event event;
+
+    //     while (window.pollEvent(event)) {
+    //         if (event.type == sf::Event::Closed) {
+    //             window.close();
+    //             terminate();
+    //         }
+    //         if (event.type == sf::Event::Resized) {
+    //             size = window.getSize();
+    //             sf::View view(sf::FloatRect(0, 0, size.x, size.y));
+    //             window.setView(view);
+    //         }
+
+    //         shouldDraw = true;
+    //     }
+
+    //     if (shouldDraw) {
+    //         draw(size, window, containerSize, blockSize, blocks, texts);
+    //         shouldDraw = false;
+    //     }
+    // }
     return 0;
 }

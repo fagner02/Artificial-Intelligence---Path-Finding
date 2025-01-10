@@ -1,7 +1,7 @@
 #pragma once
 #include "structures.h"
 
-const int space_size = 6;
+const int space_size = 10;
 
 const point dirs[] = {
     /*0: down*/ {0, 1},

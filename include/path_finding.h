@@ -10,7 +10,16 @@
 
 using namespace std;
 
-void dfs(
+string generate_log(
+    point start,
+    point target,
+    int visited_qty,
+    int generated_qty,
+    block blocks[space_size][space_size],
+    string algorithm
+);
+
+string dfs(
     point start,
     point target,
     cost_fn cost,
@@ -18,7 +27,7 @@ void dfs(
     bool& shouldDraw
 );
 
-void bfs(
+string bfs(
     point start,
     point target,
     cost_fn cost,
@@ -26,7 +35,7 @@ void bfs(
     bool& shouldDraw
 );
 
-void a_star(
+string a_star(
     point start,
     point target,
     cost_fn cost,
@@ -35,7 +44,7 @@ void a_star(
     bool& shouldDraw
 );
 
-void dijkstra(
+string dijkstra(
     point start,
     point target,
     cost_fn cost,
@@ -43,7 +52,7 @@ void dijkstra(
     bool& shouldDraw
 );
 
-void greedy_search(
+string greedy_search(
     point start,
     point target,
     cost_fn cost,

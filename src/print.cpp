@@ -60,14 +60,15 @@ void set_path_block_colors(
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
-void calculate_path(point start, point target, block blocks[space_size][space_size], bool& shouldDraw) {
+std::vector<point> calculate_path(point start, point target, block blocks[space_size][space_size], bool& shouldDraw) {
     std::vector<point> path = {  };
 
     while (target.x != -1 && target.y != -1) {
         path.push_back(target);
         target = blocks[target.x][target.y].info.from;
-        set_path_block_colors(blocks, path, shouldDraw);
+        // set_path_block_colors(blocks, path, shouldDraw);
     }
+    return path;
 }
 
 

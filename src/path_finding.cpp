@@ -1,13 +1,40 @@
 
 #include <path_finding.h>
-#include <heuristics.h>
 
-void dfs(
+string generate_log(
+    point start,
+    point target,
+    int visited_qty,
+    int generated_qty,
+    block blocks[space_size][space_size],
+    string algorithm
+) {
+    std::vector<point> path = {  };
+
+    while (target.x != -1 && target.y != -1) {
+        path.push_back(target);
+        target = blocks[target.x][target.y].info.from;
+    }
+    stringstream ss;
+    ss << algorithm << "," << visited_qty << "," << generated_qty << "," << path.size() << ",[";
+    for (auto p : path) {
+        ss << "[" << p.x << " " << p.y << "]";
+    }
+    ss << "], [" << start.x << " " << start.y << "], [" << target.x << " " << target.y
+        << "]";
+
+    return ss.str();
+}
+
+string dfs(
     point start,
     point target,
     cost_fn cost,
     block blocks[space_size][space_size], bool& shouldDraw
 ) {
+    int visited_qty = 0;
+    int generated_qty = 0;
+
     stack<point> stack;
     stack.push(start);
     blocks[start.x][start.y].info.cost = 0;
@@ -28,8 +55,10 @@ void dfs(
                 blocks[next.x][next.y].info.cost = blocks[node.x][node.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[node.x][node.y].info.step + 1;
                 blocks[next.x][next.y].info.from = node;
-                calculate_path(start, target, blocks, shouldDraw);
-                return;
+                visited_qty++;
+                generated_qty++;
+
+                return generate_log(start, target, visited_qty, generated_qty, blocks, "dfs");
             }
 
             if (blocks[next.x][next.y].info.cost == -1) {
@@ -38,16 +67,17 @@ void dfs(
                 blocks[next.x][next.y].info.cost = blocks[node.x][node.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[node.x][node.y].info.step + 1;
                 blocks[next.x][next.y].info.from = node;
-
-                set_block_colors(blocks, next, shouldDraw);
+                generated_qty++;
+                visited_qty++;
+                // set_block_colors(blocks, next, shouldDraw);
             }
         }
     }
 
-    calculate_path(start, target, blocks, shouldDraw);
+    // calculate_path(start, target, blocks, shouldDraw);
 }
 
-void a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, block nodes[space_size][space_size], bool& shouldDraw) {
+string a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, block nodes[space_size][space_size], bool& shouldDraw) {
     vector<point> open;
     vector<point> closed;
 
@@ -71,8 +101,8 @@ void a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, blo
 
         if (current.x == target.x && current.y == target.y) {
             cout << "Found target\n";
-            calculate_path(start, target, nodes, shouldDraw);
-            return;
+            // calculate_path(start, target, nodes, shouldDraw);
+            return generate_log(start, target, closed.size(), open.size(), nodes, "a_star");
         }
 
         for (int i = 0; i < 4; i++) {
@@ -98,7 +128,7 @@ void a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, blo
             nodes[next.x][next.y].info.heuristic = heuristic(next, target);
             nodes[next.x][next.y].info.from = current;
 
-            set_block_colors(nodes, next, shouldDraw);
+            // set_block_colors(nodes, next, shouldDraw);
         }
     }
 }
