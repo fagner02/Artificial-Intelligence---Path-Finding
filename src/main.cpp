@@ -156,7 +156,7 @@ int main() {
     cout << "Hello, World!\n";
 
     sf::ContextSettings settings;
-    settings.antialiasingLevel = 8;
+    settings.antialiasingLevel = 5;
     sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "My window",
         sf::Style::Default, settings);
     auto font = sf::Font();
