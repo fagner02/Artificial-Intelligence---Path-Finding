@@ -136,9 +136,15 @@ int main() {
     // texts[0] = create_label(font, pos, pad);
     // texts[1] = create_label(font, pos, pad);
     ofstream file("log.csv");
+    if (!file.is_open()) {
+        cout << "Erro ao abrir o arquivo log.csv\n";
+        return 1;
+    }
 
     for (int i = 0; i < 50; i++) {
-        file << a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], heuristic1, blocks, ref(shouldDraw)) << "\n";
+        // file << a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], heuristic1, blocks, ref(shouldDraw)) << "\n";
+        file << bfs(point{ 0, 0 }, point{ 5, 3 }, cost_all10, blocks, ref(shouldDraw)) << "\n";
+        // file << dijkstra(point{ 0, 0 }, point{ 5, 3 }, cost_all10, blocks, ref(shouldDraw)) << "\n";
     }
     // while (window.isOpen()) {
     //     sf::Event event;

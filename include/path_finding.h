@@ -5,6 +5,7 @@
 #include <constants.h>
 #include <print.h>
 #include <heuristics.h>
+#include <queue>
 
 #pragma once
 
