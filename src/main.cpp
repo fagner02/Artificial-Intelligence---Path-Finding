@@ -118,6 +118,16 @@ int main() {
 
     for (int i = 0; i < space_size; i++) {
         for (int j = 0; j < space_size; j++) {
+            blocks[i][j].info.cost = -1;
+            blocks[i][j].info.heuristic = -1;
+            blocks[i][j].info.from = {-1, -1};
+        }
+    }
+
+
+    /*
+    for (int i = 0; i < space_size; i++) {
+        for (int j = 0; j < space_size; j++) {
             blocks[i][j] = {
                 // sf::RoundedRectangleShape(sf::Vector2f(50, 50), 10, 20),
                 // sf::Text(),
@@ -129,7 +139,7 @@ int main() {
             // blocks[i][j].text.setCharacterSize(18);
         }
     }
-
+    */
     // label texts[2];
     // sf::Vector2f pos(10, 10);
 
@@ -143,7 +153,15 @@ int main() {
 
     for (int i = 0; i < 50; i++) {
         // file << a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], heuristic1, blocks, ref(shouldDraw)) << "\n";
-        file << bfs(point{ 0, 0 }, point{ 5, 3 }, cost_all10, blocks, ref(shouldDraw)) << "\n";
+        // file << bfs(point{ 0, 0 }, point{ 5, 3 }, cost_all10, blocks, ref(shouldDraw)) << "\n";
+        //file << a_star(point{0, 0}, point{5, 3}, cost_all10, heuristic1, blocks, shouldDraw) << "\n";           
+
+        point start = {0, 0}; // Defina um ponto fixo de início
+        point target = {5, 5}; // Defina um ponto fixo de destino
+    
+        file << greedy_search(point{0, 0}, point{5, 3}, cost_all10, heuristic1, blocks, shouldDraw) << "\n";
+
+
         // file << dijkstra(point{ 0, 0 }, point{ 5, 3 }, cost_all10, blocks, ref(shouldDraw)) << "\n";
     }
     // while (window.isOpen()) {
