@@ -206,3 +206,49 @@ string dijkstra(point start, point target, cost_fn cost, block blocks[space_size
         }
     }
 }
+
+string greedy_search(
+    point start,
+    point target,
+    cost_fn cost,
+    heuristic_fn heuristic,
+    block nodes[space_size][space_size],
+    bool& shouldDraw
+) {
+    vector<point> open;
+
+    nodes[start.x][start.y].info.cost = 0;
+    nodes[start.x][start.y].info.heuristic = heuristic(start, target);
+    nodes[start.x][start.y].info.from = {-1, -1};
+    open.push_back(start);
+
+    while (!open.empty()) {
+        auto min_it = min_element(open.begin(), open.end(), [&](point a, point b) {
+            return nodes[a.x][a.y].info.heuristic < nodes[b.x][b.y].info.heuristic;
+        });
+
+        point current = *min_it;
+        open.erase(min_it);
+        
+        if (current.x == target.x && current.y == target.y) {
+            return generate_log(start, target, 0, 0, nodes, "greedy_search");
+        }
+
+        for (int i = 0; i < 4; i++) {
+            point next = {current.x + dirs[i].x, current.y + dirs[i].y};
+
+            if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
+                continue;
+            }
+
+            if (nodes[next.x][next.y].info.cost != -1) {
+                continue;
+            }
+
+            nodes[next.x][next.y].info.heuristic = heuristic(next, target);
+            nodes[next.x][next.y].info.from = current;
+            nodes[next.x][next.y].info.cost = 0;
+            open.push_back(next);
+        }
+    }
+}
