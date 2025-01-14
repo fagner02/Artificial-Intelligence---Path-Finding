@@ -11,3 +11,7 @@ float heuristic1(point a, point b);
 
 float heuristic2(point a, point b);
 
+const heuristic_fn heuristic_fns[] = {
+   heuristic1,
+   heuristic2
+};

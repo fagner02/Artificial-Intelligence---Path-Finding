@@ -1,40 +1,58 @@
 
 #include <path_finding.h>
 
-string generate_log(
+std::string generate_log(
     point start,
     point target,
     int visited_qty,
     int generated_qty,
     block blocks[space_size][space_size],
-    string algorithm) {
+    std::string algorithm,
+    int cost_id,
+    int heuristic_id,
+    float cost,
+    std::vector<int> order = { 0, 1, 2, 3 }
+) {
     std::vector<point> path = {};
 
+    point _target = target;
     while (target.x != -1 && target.y != -1) {
         path.push_back(target);
         target = blocks[target.x][target.y].info.from;
     }
-    stringstream ss;
+    std::stringstream ss;
     ss << algorithm << "," << visited_qty << "," << generated_qty << "," << path.size() << ",[";
     for (auto p : path) {
         ss << "[" << p.x << " " << p.y << "]";
     }
-    ss << "], [" << start.x << " " << start.y << "], [" << target.x << " " << target.y
-        << "]";
+    ss << "], [" << start.x << " " << start.y << "], [" << _target.x << " " << _target.y
+        << "],";
+    ss << cost_id << "," << heuristic_id << ",";
+    ss << cost << ",\"[";
 
+    ss << order[0];
+    for (int i = 1; i < 4; i++) {
+        ss << " " << order[i];
+    }
+    ss << "]\"";
     return ss.str();
 }
 
-string dfs(
+std::string dfs(
     point start,
     point target,
     cost_fn cost,
-    block blocks[space_size][space_size], bool& shouldDraw) {
-    int visited_qty = 0;
+    block blocks[space_size][space_size], bool& shouldDraw,
+    int cost_id,
+    std::vector<int> order
+) {
+
+    int visited_qty = 1;
     int generated_qty = 0;
 
-    stack<point> stack;
+    std::stack<point> stack;
     stack.push(start);
+    generated_qty++;
     blocks[start.x][start.y].info.cost = 0;
     blocks[start.x][start.y].info.step = 0;
     blocks[start.x][start.y].info.from = { -1, -1 };
@@ -43,13 +61,15 @@ string dfs(
         stack.pop();
 
         for (int i = 0; i < 4; i++) {
-            point next = { node.x + dirs[i].x, node.y + dirs[i].y };
+            int dir = order[i];
+            point next = { node.x + dirs[dir].x, node.y + dirs[dir].y };
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
-            float costValue = cost(i, blocks[node.x][node.y].info.step + 1);
+            visited_qty++;
+            float costValue = cost(dir, blocks[node.x][node.y].info.step + 1);
             if (next.x == target.x && next.y == target.y) {
-                cout << "Found target\n"
+                std::cout << "Found target\n"
                     << blocks[node.x][node.y].info.cost + 1 << "\n";
                 blocks[next.x][next.y].info.cost = blocks[node.x][node.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[node.x][node.y].info.step + 1;
@@ -57,28 +77,42 @@ string dfs(
                 visited_qty++;
                 generated_qty++;
 
-                return generate_log(start, target, visited_qty, generated_qty, blocks, "dfs");
+                calculate_path(start, target, blocks, shouldDraw);
+                return generate_log(start, target, visited_qty, generated_qty, blocks, "dfs", cost_id, -1, blocks[next.x][next.y].info.cost, order);
             }
 
             if (blocks[next.x][next.y].info.cost == -1) {
                 stack.push(next);
-
+                generated_qty++;
                 blocks[next.x][next.y].info.cost = blocks[node.x][node.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[node.x][node.y].info.step + 1;
                 blocks[next.x][next.y].info.from = node;
-                generated_qty++;
-                visited_qty++;
-                // set_block_colors(blocks, next, shouldDraw);
+
+                set_block_colors(blocks, next, shouldDraw);
             }
         }
     }
 
-    // calculate_path(start, target, blocks, shouldDraw);
+    calculate_path(start, target, blocks, shouldDraw);
+
+    return "null";
 }
 
-string a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, block nodes[space_size][space_size], bool& shouldDraw) {
-    vector<point> open;
-    vector<point> closed;
+std::string a_star(
+    point start,
+    point target,
+    cost_fn cost,
+    heuristic_fn heuristic,
+    block nodes[space_size][space_size],
+    bool& shouldDraw,
+    int cost_id,
+    int heuristic_id
+) {
+    std::vector<point> open;
+    std::vector<point> closed;
+
+    int visited_qty = 1;
+    int generated_qty = 0;
 
     nodes[start.x][start.y].info.cost = 0;
     nodes[start.x][start.y].info.heuristic = heuristic(start, target);
@@ -86,6 +120,7 @@ string a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, b
     nodes[start.x][start.y].info.from = { -1, -1 };
 
     open.push_back(start);
+    generated_qty++;
 
     while (!open.empty()) {
         auto min = min_element(open.begin(), open.end(), [&](point a, point b) {
@@ -96,11 +131,12 @@ string a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, b
         open.erase(min);
 
         closed.push_back(current);
+        generated_qty++;
 
         if (current.x == target.x && current.y == target.y) {
-            cout << "Found target\n";
-            // calculate_path(start, target, nodes, shouldDraw);
-            return generate_log(start, target, closed.size(), open.size(), nodes, "a_star");
+            std::cout << "Found target\n";
+            calculate_path(start, target, nodes, shouldDraw);
+            return generate_log(start, target, closed.size(), open.size(), nodes, "a_star", cost_id, heuristic_id, nodes[current.x][current.y].info.cost);
         }
 
         for (int i = 0; i < 4; i++) {
@@ -112,11 +148,14 @@ string a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, b
             if (find(closed.begin(), closed.end(), next) != closed.end()) {
                 continue;
             }
+
+            visited_qty++;
             float new_cost = nodes[current.x][current.y].info.cost + cost(i, nodes[current.x][current.y].info.step + 1);
 
             auto found = find(open.begin(), open.end(), next);
             if (found == open.end()) {
                 open.push_back(next);
+                generated_qty++;
             } else if (new_cost >= nodes[next.x][next.y].info.cost) {
                 continue;
             }
@@ -126,17 +165,27 @@ string a_star(point start, point target, cost_fn cost, heuristic_fn heuristic, b
             nodes[next.x][next.y].info.heuristic = heuristic(next, target);
             nodes[next.x][next.y].info.from = current;
 
-            // set_block_colors(nodes, next, shouldDraw);
+            set_block_colors(nodes, next, shouldDraw);
         }
     }
+
+    return "null";
 }
 
-string bfs(point start, point target, cost_fn cost, block blocks[space_size][space_size], bool& shouldDraw) {
-    int visited_qty = 0;
+std::string bfs(point start,
+    point target,
+    cost_fn cost,
+    block blocks[space_size][space_size],
+    bool& shouldDraw,
+    int cost_id,
+    std::vector<int> order
+) {
+    int visited_qty = 1;
     int generated_qty = 0;
 
-    queue<point> queue;
+    std::queue<point> queue;
     queue.push(start);
+    generated_qty++;
 
     blocks[start.x][start.y].info.cost = 0;
     blocks[start.x][start.y].info.step = 0;
@@ -147,46 +196,62 @@ string bfs(point start, point target, cost_fn cost, block blocks[space_size][spa
         queue.pop();
 
         for (int i = 0; i < 4; i++) {
-            point next = { current.x + dirs[i].x, current.y + dirs[i].y };
+            int dir = order[i];
+            point next = { current.x + dirs[dir].x, current.y + dirs[dir].y };
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
 
-            float costValue = cost(i, blocks[current.x][current.y].info.step + 1);
+            float costValue = cost(dir, blocks[current.x][current.y].info.step + 1);
             if (next.x == target.x && next.y == target.y) {
-                cout << "Found target\n"
+                std::cout << "Found target\n"
                     << blocks[current.x][current.y].info.cost + 1 << "\n";
                 blocks[next.x][next.y].info.cost = blocks[current.x][current.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[current.x][current.y].info.step + 1;
                 blocks[next.x][next.y].info.from = current;
                 visited_qty++;
-                generated_qty++;
-
-                return generate_log(start, target, visited_qty, generated_qty, blocks, "bfs");
+                calculate_path(start, target, blocks, shouldDraw);
+                return generate_log(start, target, visited_qty, generated_qty, blocks, "bfs", cost_id, -1, blocks[next.x][next.y].info.cost, order);
             }
             if (blocks[next.x][next.y].info.cost == -1) {
                 queue.push(next);
+                generated_qty++;
                 blocks[next.x][next.y].info.cost = blocks[current.x][current.y].info.cost + 1;
                 blocks[next.x][next.y].info.step = blocks[current.x][current.y].info.step + 1;
                 blocks[next.x][next.y].info.from = current;
-                generated_qty++;
                 visited_qty++;
+                set_block_colors(blocks, next, shouldDraw);
             }
         }
     }
+    return "null";
 }
 
-string dijkstra(point start, point target, cost_fn cost, block blocks[space_size][space_size], bool& shouldDraw) {
-    priority_queue<pair<float, point>, vector<pair<float, point>>, greater<pair<float, point>>> pq;
+std::string dijkstra(point start, point target, cost_fn cost, block blocks[space_size][space_size], bool& shouldDraw, int cost_id) {
+    std::vector<point> pq;
+
     blocks[start.x][start.y].info.cost = 0;
-    pq.push({ 0, start });
+    blocks[start.x][start.y].info.step = 0;
+    blocks[start.x][start.y].info.from = { -1, -1 };
+
+    int visited_qty = 1;
+    int generated_qty = 0;
+
+    pq.push_back(start);
+    generated_qty++;
 
     while (!pq.empty()) {
-        auto [current_cost, current] = pq.top();
-        pq.pop();
+        auto min = min_element(pq.begin(), pq.end(), [&](point a, point b) {
+            return blocks[a.x][a.y].info.cost < blocks[b.x][b.y].info.cost;
+            });
 
-        if (current == target) {
-            return generate_log(start, target, 0, 0, blocks, "dijkstra");
+        point current = *min;
+        pq.erase(min);
+
+        if (current.x == target.x && current.y == target.y) {
+            std::cout << "Found target\n";
+            calculate_path(start, target, blocks, shouldDraw);
+            return generate_log(start, target, visited_qty, generated_qty, blocks, "dijkstra", cost_id, -1, blocks[current.x][current.y].info.cost);
         }
 
         for (int i = 0; i < 4; i++) {
@@ -196,50 +261,67 @@ string dijkstra(point start, point target, cost_fn cost, block blocks[space_size
                 continue;
             }
 
-            float new_cost = current_cost + cost(i, blocks[current.x][current.y].info.step + 1);
+            visited_qty++;
+            float costValue = cost(i, blocks[current.x][current.y].info.step + 1);
+            float new_cost = blocks[current.x][current.y].info.cost + costValue;
 
-            if (new_cost < blocks[next.x][next.y].info.cost) {
+            if (blocks[next.x][next.y].info.cost == -1 || new_cost < blocks[next.x][next.y].info.cost) {
                 blocks[next.x][next.y].info.cost = new_cost;
+                blocks[next.x][next.y].info.step = blocks[current.x][current.y].info.step + 1;
                 blocks[next.x][next.y].info.from = current;
-                pq.push({ new_cost, next });
+                pq.push_back(next);
+                generated_qty++;
+                set_block_colors(blocks, next, shouldDraw);
             }
         }
     }
+
+    return "null";
 }
 
-string greedy_search(
+std::string greedy_search(
     point start,
     point target,
     cost_fn cost,
     heuristic_fn heuristic,
     block nodes[space_size][space_size],
-    bool& shouldDraw
+    bool& shouldDraw,
+    int cost_id,
+    int heuristic_id
 ) {
-    vector<point> open;
+    std::vector<point> open;
+
+    int visited_qty = 1;
+    int generated_qty = 0;
 
     nodes[start.x][start.y].info.cost = 0;
     nodes[start.x][start.y].info.heuristic = heuristic(start, target);
-    nodes[start.x][start.y].info.from = {-1, -1};
+    nodes[start.x][start.y].info.from = { -1, -1 };
     open.push_back(start);
+    generated_qty++;
 
     while (!open.empty()) {
         auto min_it = min_element(open.begin(), open.end(), [&](point a, point b) {
             return nodes[a.x][a.y].info.heuristic < nodes[b.x][b.y].info.heuristic;
-        });
+            });
 
         point current = *min_it;
         open.erase(min_it);
-        
+
         if (current.x == target.x && current.y == target.y) {
-            return generate_log(start, target, 0, 0, nodes, "greedy_search");
+            std::cout << "Found target\n";
+            calculate_path(start, target, nodes, shouldDraw);
+            return generate_log(start, target, visited_qty, generated_qty, nodes, "greedy_search", cost_id, heuristic_id, nodes[current.x][current.y].info.cost);
         }
 
         for (int i = 0; i < 4; i++) {
-            point next = {current.x + dirs[i].x, current.y + dirs[i].y};
+            point next = { current.x + dirs[i].x, current.y + dirs[i].y };
 
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
+
+            visited_qty++;
 
             if (nodes[next.x][next.y].info.cost != -1) {
                 continue;
@@ -249,6 +331,10 @@ string greedy_search(
             nodes[next.x][next.y].info.from = current;
             nodes[next.x][next.y].info.cost = 0;
             open.push_back(next);
+            generated_qty++;
+            set_block_colors(nodes, next, shouldDraw);
         }
     }
+
+    return "null";
 }

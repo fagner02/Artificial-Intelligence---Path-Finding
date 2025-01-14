@@ -9,55 +9,66 @@
 
 #pragma once
 
-using namespace std;
-
-string generate_log(
+std::string generate_log(
     point start,
     point target,
     int visited_qty,
     int generated_qty,
     block blocks[space_size][space_size],
-    string algorithm
+    std::string algorithm,
+    int cost_id,
+    int heuristic_id,
+    float cost,
+    std::vector<int> order
 );
 
-string dfs(
+std::string dfs(
     point start,
     point target,
     cost_fn cost,
     block blocks[space_size][space_size],
-    bool& shouldDraw
+    bool& shouldDraw,
+    int cost_id,
+    std::vector<int> order = { 0, 1, 2, 3 }
 );
 
-string bfs(
+std::string bfs(
     point start,
     point target,
     cost_fn cost,
     block blocks[space_size][space_size],
-    bool& shouldDraw
+    bool& shouldDraw,
+    int cost_id,
+    std::vector<int> order = { 0, 1, 2, 3 }
 );
 
-string a_star(
+std::string a_star(
     point start,
     point target,
     cost_fn cost,
     heuristic_fn heuristic,
     block nodes[space_size][space_size],
-    bool& shouldDraw
+    bool& shouldDraw,
+    int cost_id,
+    int heuristic_id
 );
 
-string dijkstra(
+std::string dijkstra(
     point start,
     point target,
     cost_fn cost,
     block blocks[space_size][space_size],
-    bool& shouldDraw
+    bool& shouldDraw,
+    int cost_id
 );
 
-string greedy_search(
+std::string greedy_search(
     point start,
     point target,
     cost_fn cost,
     heuristic_fn heuristic,
     block nodes[space_size][space_size],
-    bool& shouldDraw
+    bool& shouldDraw,
+    int cost_id,
+    int heuristic_id
 );

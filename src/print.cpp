@@ -36,7 +36,7 @@ void print(point target, point next, point prev, block visited[space_size][space
     }
     std::cout << "\n";
 }
-/*
+
 void set_path_block_colors(
     block blocks[space_size][space_size],
     std::vector<point> path,
@@ -59,7 +59,6 @@ void set_path_block_colors(
     shouldDraw = true;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
-*/
 
 std::vector<point> calculate_path(point start, point target, block blocks[space_size][space_size], bool& shouldDraw) {
     std::vector<point> path = {  };
@@ -67,12 +66,10 @@ std::vector<point> calculate_path(point start, point target, block blocks[space_
     while (target.x != -1 && target.y != -1) {
         path.push_back(target);
         target = blocks[target.x][target.y].info.from;
-        // set_path_block_colors(blocks, path, shouldDraw);
+        set_path_block_colors(blocks, path, shouldDraw);
     }
     return path;
 }
-
-/*
 
 void set_block_colors(
     block blocks[space_size][space_size],
@@ -95,4 +92,4 @@ void set_block_colors(
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 }
-*/
+

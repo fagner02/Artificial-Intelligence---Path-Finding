@@ -8,6 +8,8 @@
 #include "structures.h"
 #include "constants.h"
 
+#pragma once
+
 void print_path(std::vector<point>& path, block visited[space_size][space_size]);
 
 void print(point target, point next, point prev, block visited[space_size][space_size]);
