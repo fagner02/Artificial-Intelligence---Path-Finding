@@ -63,7 +63,6 @@ void draw(
         window.draw(texts[i].box);
         window.draw(texts[i].text);
     }
-    //window.display();
 }
 
 auto create_label(
@@ -143,51 +142,47 @@ int main() {
     texts.push_back(create_label(font, pos, pad, "Dfs"));
     texts.push_back(create_label(font, pos, pad, "Greedy"));
     texts.push_back(create_label(font, pos, pad, "A*"));
+    point start = { 0, 0 };
+    point target = { 30, 30 };
     std::vector<button> buttons = {
         {&texts[0], [&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << dijkstra(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0, true) << "\n";
+                std::cout << dijkstra(start, target, cost_all10, blocks, std::ref(shouldDraw), 0, true) << "\n";
             });
             a1.detach();
          }},
         {&texts[1],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << bfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0, {0,1,2,3}, true) << "\n";
+                std::cout << bfs(start, target, cost_all10, blocks, std::ref(shouldDraw), 0, {0,1,2,3}, true) << "\n";
             });
             a1.detach();
         } },
         {&texts[2],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << dfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                std::cout << dfs(start, target, cost_all10, blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
             });
             a1.detach();
         }},
         {&texts[3],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << greedy_search(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true) << "\n";
+                std::cout << greedy_search(start, target, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true) << "\n";
             });
             a1.detach();
         }},
         {&texts[4],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true) << "\n";
+                std::cout << a_star(start, target, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true) << "\n";
             });
             a1.detach();
         }}
     };
     sf::Vector2f scale = { 0.5,0.5 };
     sf::Vector2f translate = { size.x * scale.x,size.y * scale.y };
-
-    auto a1 = std::thread([&]() {
-        std::cout << a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1) << "\n";
-        fill_blocks(blocks);
-        std::cout << bfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0) << "\n";
-        });
 
     while (window.isOpen()) {
         sf::Event event;

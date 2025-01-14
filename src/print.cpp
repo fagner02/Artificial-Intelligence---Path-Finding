@@ -57,7 +57,7 @@ void set_path_block_colors(
         }
     }
     shouldDraw = true;
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 std::vector<point> calculate_path(point start, point target, block blocks[space_size][space_size], bool& shouldDraw) {
@@ -89,7 +89,7 @@ void set_block_colors(
     }
     shouldDraw = true;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 }
 
