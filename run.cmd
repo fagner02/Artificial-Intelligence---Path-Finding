@@ -6,10 +6,11 @@ g++ -std=c++17 -pthread -LC:\msys64\mingw32\lib -I.\include -IC:\msys64\mingw32\
 src\structures.cpp ^
 src\print.cpp ^
 src\costs.cpp ^
-src\main.cpp ^
-src\rectshape.cpp ^
 src\path_finding.cpp ^
 src\heuristics.cpp ^
+src\experiments.cpp ^
+src\main.cpp ^
+src\rectshape.cpp ^
 -lsfml-graphics ^
 -lsfml-window ^
 -lsfml-system ^
