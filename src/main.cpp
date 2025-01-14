@@ -19,6 +19,7 @@
 #include <tuple>
 #include <vector>
 #include <fstream>
+#include <experiments.h>
 
 void draw(
     sf::Vector2u& size,
@@ -134,6 +135,13 @@ int main() {
             blocks[i][j].text.setCharacterSize(18);
         }
     }
+
+
+    // experiment1();
+    // experiment2();
+    // experiment3();
+    // experiment4();
+    // experiment5();
 
     std::vector<label> texts;
     sf::Vector2f pos(10, 10);
