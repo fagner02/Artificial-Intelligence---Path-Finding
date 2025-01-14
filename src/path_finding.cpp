@@ -216,7 +216,7 @@ std::string bfs(point start,
             if (blocks[next.x][next.y].info.cost == -1) {
                 queue.push(next);
                 generated_qty++;
-                blocks[next.x][next.y].info.cost = blocks[current.x][current.y].info.cost + 1;
+                blocks[next.x][next.y].info.cost = blocks[current.x][current.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[current.x][current.y].info.step + 1;
                 blocks[next.x][next.y].info.from = current;
                 visited_qty++;

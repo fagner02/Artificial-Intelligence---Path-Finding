@@ -19,7 +19,6 @@
 #include <tuple>
 #include <vector>
 #include <fstream>
-#include <wx-3.2/wx/wx.h>
 
 void draw(
     sf::Vector2u& size,
@@ -319,11 +318,11 @@ int main() {
     //     }
     // }
 
-    auto a1 = std::thread([&]() {
-        std::cout << a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1) << "\n";
-        fill_blocks(blocks);
-        std::cout << bfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0) << "\n";
-        });
+    // auto a1 = std::thread([&]() {
+    //     std::cout << a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1) << "\n";
+    //     fill_blocks(blocks);
+    //     std::cout << bfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0) << "\n";
+    //     });
 
     while (window.isOpen()) {
         sf::Event event;
@@ -357,16 +356,6 @@ int main() {
                         if (buttons[i].pressed && buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                             buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
                             buttons[i].fn();
-                            // a1.detach();
-                            // auto a2 = std::thread([]() {
-                            //     std::cout << "ki";
-                                // fill_blocks(blocks);
-                                // a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1);
-                            //     });
-                            // a2.detach();
-                            std::cout << "out";
-                            // a1.swap(a2);
-
                             buttons[i].pressed = false;
                         } else {
                             buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
