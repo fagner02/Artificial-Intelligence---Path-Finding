@@ -29,7 +29,8 @@ std::string dfs(
     block blocks[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
-    std::vector<int> order = { 0, 1, 2, 3 }
+    std::vector<int> order = { 0, 1, 2, 3 },
+    bool animate = false
 );
 
 std::string bfs(
@@ -39,7 +40,8 @@ std::string bfs(
     block blocks[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
-    std::vector<int> order = { 0, 1, 2, 3 }
+    std::vector<int> order = { 0, 1, 2, 3 },
+    bool animate = false
 );
 
 std::string a_star(
@@ -50,7 +52,8 @@ std::string a_star(
     block nodes[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
-    int heuristic_id
+    int heuristic_id,
+    bool animate = false
 );
 
 std::string dijkstra(
@@ -59,7 +62,8 @@ std::string dijkstra(
     cost_fn cost,
     block blocks[space_size][space_size],
     bool& shouldDraw,
-    int cost_id
+    int cost_id,
+    bool animate = false
 );
 
 std::string greedy_search(
@@ -70,5 +74,6 @@ std::string greedy_search(
     block nodes[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
-    int heuristic_id
+    int heuristic_id,
+    bool animate = false
 );

@@ -160,35 +160,35 @@ int main() {
         {&texts[0], [&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << dijkstra(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0) << "\n";
+                std::cout << dijkstra(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0, true) << "\n";
             });
             a1.detach();
          }},
         {&texts[1],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << bfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0) << "\n";
+                std::cout << bfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0, {0,1,2,3}, true) << "\n";
             });
             a1.detach();
         } },
         {&texts[2],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << dfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0) << "\n";
+                std::cout << dfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
             });
             a1.detach();
         }},
         {&texts[3],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << greedy_search(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1) << "\n";
+                std::cout << greedy_search(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true) << "\n";
             });
             a1.detach();
         }},
         {&texts[4],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1) << "\n";
+                std::cout << a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true) << "\n";
             });
             a1.detach();
         }}
@@ -197,132 +197,132 @@ int main() {
     sf::Vector2f translate = { size.x * scale.x,size.y * scale.y };
 
 
-    // ofstream file("log0.csv");
-    // if (!file.is_open()) {
-    //     cout << "Erro ao abrir o arquivo log.csv\n";
-    //     return 1;
-    // }
-    // file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
+    std::ofstream file("log0.csv");
+    if (!file.is_open()) {
+        std::cout << "Erro ao abrir o arquivo log.csv\n";
+        return 1;
+    }
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
 
 
-    // srand((unsigned)time(NULL));
+    srand((unsigned)time(NULL));
 
-    // for (int i = 0; i < 50; i++) {
-    //     // file << a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], heuristic1, blocks, ref(shouldDraw)) << "\n";
-    //     // file << bfs(point{ 0, 0 }, point{ 5, 3 }, cost_all10, blocks, ref(shouldDraw)) << "\n";
-    //     //file << a_star(point{0, 0}, point{5, 3}, cost_all10, heuristic1, blocks, shouldDraw) << "\n";           
+    for (int i = 0; i < 50; i++) {
+        // file << a_star(point{ 0, 0 }, point{ 5, 3 }, costs[3], heuristic1, blocks, std::ref(shouldDraw)) << "\n";
+        // file << bfs(point{ 0, 0 }, point{ 5, 3 }, cost_all10, blocks, std::ref(shouldDraw)) << "\n";
+        //file << a_star(point{0, 0}, point{5, 3}, cost_all10, heuristic1, blocks, shouldDraw) << "\n";           
 
-    //     point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
-    //     point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
+        point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
+        point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
 
 
-    //     // file << greedy_search(point{ 0, 0 }, point{ 5, 3 }, cost_all10, heuristic1, blocks, shouldDraw) << "\n";
+        // file << greedy_search(point{ 0, 0 }, point{ 5, 3 }, cost_all10, heuristic1, blocks, shouldDraw) << "\n";
 
-    //     for (int j = 0; j < 4; j++) {
-    //         auto cost = costs[j];
-    //         fill_blocks(blocks);
-    //         file << dijkstra(start, target, cost, blocks, ref(shouldDraw), j) << "\n";
-    //         fill_blocks(blocks);
-    //         file << bfs(start, target, cost, blocks, ref(shouldDraw), j) << "\n";
-    //         fill_blocks(blocks);
-    //         file << dfs(start, target, cost, blocks, ref(shouldDraw), j) << "\n";
-    //     }
-    //     // file << a_star(start, target, cost_all10, heuristic1, blocks, shouldDraw) << "\n";
-    // }
+        for (int j = 0; j < 4; j++) {
+            auto cost = costs[j];
+            fill_blocks(blocks);
+            file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            fill_blocks(blocks);
+            file << bfs(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            fill_blocks(blocks);
+            file << dfs(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+        }
+        // file << a_star(start, target, cost_all10, heuristic1, blocks, shouldDraw) << "\n";
+    }
 
-    // ofstream file1("log1.csv");
-    // if (!file1.is_open()) {
-    //     cout << "Erro ao abrir o arquivo log.csv\n";
-    //     return 1;
-    // }
-    // file1 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
-    // for (int i = 0; i < 50; i++) {
-    //     point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
-    //     point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
+    std::ofstream file1("log1.csv");
+    if (!file1.is_open()) {
+        std::cout << "Erro ao abrir o arquivo log.csv\n";
+        return 1;
+    }
+    file1 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
+    for (int i = 0; i < 50; i++) {
+        point start = { rand() % 31, rand() % 31 };
+        point target = { rand() % 31, rand() % 31 };
 
-    //     for (int j = 0; j < 4; j++) {
-    //         auto cost = costs[j];
-    //         fill_blocks(blocks);
-    //         file1 << dijkstra(start, target, cost, blocks, ref(shouldDraw), j) << "\n";
-    //         for (int k = 0; k < 2; k++) {
-    //             fill_blocks(blocks);
-    //             file1 << a_star(start, target, cost, heuristic_fns[k], blocks, ref(shouldDraw), j, k) << "\n";
-    //         }
-    //     }
-    // }
+        for (int j = 0; j < 4; j++) {
+            auto cost = costs[j];
+            fill_blocks(blocks);
+            file1 << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            for (int k = 0; k < 2; k++) {
+                fill_blocks(blocks);
+                file1 << a_star(start, target, cost, heuristic_fns[k], blocks, std::ref(shouldDraw), j, k) << "\n";
+            }
+        }
+    }
 
-    // ofstream file2("log2.csv");
-    // if (!file2.is_open()) {
-    //     cout << "Erro ao abrir o arquivo log.csv\n";
-    //     return 1;
-    // }
-    // file2 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
-    // for (int i = 0; i < 50; i++) {
-    //     point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
-    //     point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
+    std::ofstream file2("log2.csv");
+    if (!file2.is_open()) {
+        std::cout << "Erro ao abrir o arquivo log.csv\n";
+        return 1;
+    }
+    file2 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
+    for (int i = 0; i < 50; i++) {
+        point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
+        point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
 
-    //     for (int j = 0; j < 4; j++) {
-    //         auto cost = costs[j];
+        for (int j = 0; j < 4; j++) {
+            auto cost = costs[j];
 
-    //         for (int k = 0; k < 2; k++) {
-    //             fill_blocks(blocks);
-    //             file2 << greedy_search(start, target, cost, heuristic_fns[k], blocks, ref(shouldDraw), j, k) << "\n";
-    //             fill_blocks(blocks);
-    //             file2 << a_star(start, target, cost, heuristic_fns[k], blocks, ref(shouldDraw), j, k) << "\n";
-    //         }
-    //     }
-    // }
+            for (int k = 0; k < 2; k++) {
+                fill_blocks(blocks);
+                file2 << greedy_search(start, target, cost, heuristic_fns[k], blocks, std::ref(shouldDraw), j, k) << "\n";
+                fill_blocks(blocks);
+                file2 << a_star(start, target, cost, heuristic_fns[k], blocks, std::ref(shouldDraw), j, k) << "\n";
+            }
+        }
+    }
 
-    // ofstream file3("log3.csv");
-    // if (!file3.is_open()) {
-    //     cout << "Erro ao abrir o arquivo log.csv\n";
-    //     return 1;
-    // }
-    // file3 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
-    // for (int i = 0; i < 50; i++) {
-    //     point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
-    //     point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
+    std::ofstream file3("log3.csv");
+    if (!file3.is_open()) {
+        std::cout << "Erro ao abrir o arquivo log.csv\n";
+        return 1;
+    }
+    file3 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
+    for (int i = 0; i < 50; i++) {
+        point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
+        point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
 
-    //     vector<int> order = { 0, 1, 2, 3 };
-    //     random_shuffle(order.begin(), order.end());
-    //     for (int j = 0; j < 4; j++) {
-    //         auto cost = costs[j];
+        std::vector<int> order = { 0, 1, 2, 3 };
+        std::random_shuffle(order.begin(), order.end());
+        for (int j = 0; j < 4; j++) {
+            auto cost = costs[j];
 
-    //         fill_blocks(blocks);
-    //         file3 << bfs(start, target, cost, blocks, ref(shouldDraw), j, order) << "\n";
-    //         fill_blocks(blocks);
-    //         file3 << dfs(start, target, cost, blocks, ref(shouldDraw), j, order) << "\n";
+            fill_blocks(blocks);
+            file3 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
+            fill_blocks(blocks);
+            file3 << dfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
 
-    //     }
-    // }
+        }
+    }
 
-    // ofstream file4("log4.csv");
-    // if (!file4.is_open()) {
-    //     cout << "Erro ao abrir o arquivo log.csv\n";
-    //     return 1;
-    // }
-    // file4 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
-    // for (int i = 0; i < 50; i++) {
-    //     point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
-    //     point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
+    std::ofstream file4("log4.csv");
+    if (!file4.is_open()) {
+        std::cout << "Erro ao abrir o arquivo log.csv\n";
+        return 1;
+    }
+    file4 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order\n";
+    for (int i = 0; i < 50; i++) {
+        point start = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de início
+        point target = { rand() % 31, rand() % 31 }; // Defina um ponto fixo de destino
 
-    //     vector<int> order = { 0, 1, 2, 3 };
-    //     random_shuffle(order.begin(), order.end());
-    //     for (int j = 0; j < 4; j++) {
-    //         auto cost = costs[j];
+        std::vector<int> order = { 0, 1, 2, 3 };
+        std::random_shuffle(order.begin(), order.end());
+        for (int j = 0; j < 4; j++) {
+            auto cost = costs[j];
 
-    //         fill_blocks(blocks);
-    //         file4 << bfs(start, target, cost, blocks, ref(shouldDraw), j, order) << "\n";
-    //         fill_blocks(blocks);
-    //         file4 << dfs(start, target, cost, blocks, ref(shouldDraw), j, order) << "\n";
-    //     }
-    // }
+            fill_blocks(blocks);
+            file4 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
+            fill_blocks(blocks);
+            file4 << dfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
+        }
+    }
 
-    // auto a1 = std::thread([&]() {
-    //     std::cout << a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1) << "\n";
-    //     fill_blocks(blocks);
-    //     std::cout << bfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0) << "\n";
-    //     });
+    auto a1 = std::thread([&]() {
+        std::cout << a_star(point{ 0, 0 }, point{ 5, 9 }, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1) << "\n";
+        fill_blocks(blocks);
+        std::cout << bfs(point{ 0, 0 }, point{ 5, 9 }, cost_all10, blocks, std::ref(shouldDraw), 0) << "\n";
+        });
 
     while (window.isOpen()) {
         sf::Event event;

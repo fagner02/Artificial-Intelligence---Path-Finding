@@ -44,7 +44,8 @@ std::string dfs(
     cost_fn cost,
     block blocks[space_size][space_size], bool& shouldDraw,
     int cost_id,
-    std::vector<int> order
+    std::vector<int> order,
+    bool animate
 ) {
 
     int visited_qty = 1;
@@ -77,7 +78,7 @@ std::string dfs(
                 visited_qty++;
                 generated_qty++;
 
-                calculate_path(start, target, blocks, shouldDraw);
+                if (animate) calculate_path(start, target, blocks, shouldDraw);
                 return generate_log(start, target, visited_qty, generated_qty, blocks, "dfs", cost_id, -1, blocks[next.x][next.y].info.cost, order);
             }
 
@@ -88,12 +89,12 @@ std::string dfs(
                 blocks[next.x][next.y].info.step = blocks[node.x][node.y].info.step + 1;
                 blocks[next.x][next.y].info.from = node;
 
-                set_block_colors(blocks, next, shouldDraw);
+                if (animate)   set_block_colors(blocks, next, shouldDraw);
             }
         }
     }
 
-    calculate_path(start, target, blocks, shouldDraw);
+    if (animate) calculate_path(start, target, blocks, shouldDraw);
 
     return "null";
 }
@@ -106,7 +107,8 @@ std::string a_star(
     block nodes[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
-    int heuristic_id
+    int heuristic_id,
+    bool animate
 ) {
     std::vector<point> open;
     std::vector<point> closed;
@@ -135,7 +137,7 @@ std::string a_star(
 
         if (current.x == target.x && current.y == target.y) {
             std::cout << "Found target\n";
-            calculate_path(start, target, nodes, shouldDraw);
+            if (animate) calculate_path(start, target, nodes, shouldDraw);
             return generate_log(start, target, closed.size(), open.size(), nodes, "a_star", cost_id, heuristic_id, nodes[current.x][current.y].info.cost);
         }
 
@@ -165,7 +167,7 @@ std::string a_star(
             nodes[next.x][next.y].info.heuristic = heuristic(next, target);
             nodes[next.x][next.y].info.from = current;
 
-            set_block_colors(nodes, next, shouldDraw);
+            if (animate) set_block_colors(nodes, next, shouldDraw);
         }
     }
 
@@ -178,7 +180,8 @@ std::string bfs(point start,
     block blocks[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
-    std::vector<int> order
+    std::vector<int> order,
+    bool animate
 ) {
     int visited_qty = 1;
     int generated_qty = 0;
@@ -203,14 +206,14 @@ std::string bfs(point start,
             }
 
             float costValue = cost(dir, blocks[current.x][current.y].info.step + 1);
+            visited_qty++;
             if (next.x == target.x && next.y == target.y) {
                 std::cout << "Found target\n"
                     << blocks[current.x][current.y].info.cost + 1 << "\n";
                 blocks[next.x][next.y].info.cost = blocks[current.x][current.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[current.x][current.y].info.step + 1;
                 blocks[next.x][next.y].info.from = current;
-                visited_qty++;
-                calculate_path(start, target, blocks, shouldDraw);
+                if (animate) calculate_path(start, target, blocks, shouldDraw);
                 return generate_log(start, target, visited_qty, generated_qty, blocks, "bfs", cost_id, -1, blocks[next.x][next.y].info.cost, order);
             }
             if (blocks[next.x][next.y].info.cost == -1) {
@@ -219,15 +222,22 @@ std::string bfs(point start,
                 blocks[next.x][next.y].info.cost = blocks[current.x][current.y].info.cost + costValue;
                 blocks[next.x][next.y].info.step = blocks[current.x][current.y].info.step + 1;
                 blocks[next.x][next.y].info.from = current;
-                visited_qty++;
-                set_block_colors(blocks, next, shouldDraw);
+
+                if (animate)  set_block_colors(blocks, next, shouldDraw);
             }
         }
     }
     return "null";
 }
 
-std::string dijkstra(point start, point target, cost_fn cost, block blocks[space_size][space_size], bool& shouldDraw, int cost_id) {
+std::string dijkstra(point start,
+    point target,
+    cost_fn cost,
+    block blocks[space_size][space_size],
+    bool& shouldDraw,
+    int cost_id,
+    bool animate
+) {
     std::vector<point> pq;
 
     blocks[start.x][start.y].info.cost = 0;
@@ -250,7 +260,7 @@ std::string dijkstra(point start, point target, cost_fn cost, block blocks[space
 
         if (current.x == target.x && current.y == target.y) {
             std::cout << "Found target\n";
-            calculate_path(start, target, blocks, shouldDraw);
+            if (animate) calculate_path(start, target, blocks, shouldDraw);
             return generate_log(start, target, visited_qty, generated_qty, blocks, "dijkstra", cost_id, -1, blocks[current.x][current.y].info.cost);
         }
 
@@ -271,7 +281,7 @@ std::string dijkstra(point start, point target, cost_fn cost, block blocks[space
                 blocks[next.x][next.y].info.from = current;
                 pq.push_back(next);
                 generated_qty++;
-                set_block_colors(blocks, next, shouldDraw);
+                if (animate) set_block_colors(blocks, next, shouldDraw);
             }
         }
     }
@@ -287,7 +297,8 @@ std::string greedy_search(
     block nodes[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
-    int heuristic_id
+    int heuristic_id,
+    bool animate
 ) {
     std::vector<point> open;
 
@@ -310,7 +321,7 @@ std::string greedy_search(
 
         if (current.x == target.x && current.y == target.y) {
             std::cout << "Found target\n";
-            calculate_path(start, target, nodes, shouldDraw);
+            if (animate) calculate_path(start, target, nodes, shouldDraw);
             return generate_log(start, target, visited_qty, generated_qty, nodes, "greedy_search", cost_id, heuristic_id, nodes[current.x][current.y].info.cost);
         }
 
@@ -332,7 +343,7 @@ std::string greedy_search(
             nodes[next.x][next.y].info.cost = 0;
             open.push_back(next);
             generated_qty++;
-            set_block_colors(nodes, next, shouldDraw);
+            if (animate) set_block_colors(nodes, next, shouldDraw);
         }
     }
 
