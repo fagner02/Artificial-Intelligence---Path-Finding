@@ -9,6 +9,12 @@ struct point {
     int x, y;
 };
 
+point operator+(const point& lhs, const point& rhs);
+
+point operator-(const point& lhs, const point& rhs);
+
+bool operator==(const point& lhs, const point& rhs);
+
 struct visited_info {
     float cost;
     float heuristic;
@@ -35,7 +41,6 @@ struct button {
     bool pressed = false;
 };
 
-bool operator==(const point& lhs, const point& rhs);
 
 const point dirs[] = {
     /*0: left*/ {-1, 0},

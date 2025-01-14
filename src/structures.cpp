@@ -4,6 +4,14 @@ bool operator==(const point& lhs, const point& rhs) {
     return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
+point operator+(const point& lhs, const point& rhs) {
+    return { lhs.x + rhs.x , lhs.y + rhs.y };
+}
+
+point operator-(const point& lhs, const point& rhs) {
+    return { lhs.x - rhs.x , lhs.y - rhs.y };
+}
+
 void fill_blocks(
     block blocks[space_size][space_size]
 ) {

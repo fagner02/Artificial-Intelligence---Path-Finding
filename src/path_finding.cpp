@@ -47,7 +47,6 @@ std::string dfs(
     std::vector<int> order,
     bool animate
 ) {
-
     int visited_qty = 1;
     int generated_qty = 0;
 
@@ -63,13 +62,13 @@ std::string dfs(
 
         for (int i = 0; i < 4; i++) {
             int dir = order[i];
-            point next = { node.x + dirs[dir].x, node.y + dirs[dir].y };
+            point next = { node + dirs[dir] };
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
             visited_qty++;
             float costValue = cost(dir, blocks[node.x][node.y].info.step + 1);
-            if (next.x == target.x && next.y == target.y) {
+            if (next == target) {
                 std::cout << "Found target\n"
                     << blocks[node.x][node.y].info.cost + 1 << "\n";
                 blocks[next.x][next.y].info.cost = blocks[node.x][node.y].info.cost + costValue;
@@ -135,14 +134,14 @@ std::string a_star(
         closed.push_back(current);
         generated_qty++;
 
-        if (current.x == target.x && current.y == target.y) {
+        if (current == target) {
             std::cout << "Found target\n";
             if (animate) calculate_path(start, target, nodes, shouldDraw);
             return generate_log(start, target, closed.size(), open.size(), nodes, "a_star", cost_id, heuristic_id, nodes[current.x][current.y].info.cost);
         }
 
         for (int i = 0; i < 4; i++) {
-            point next = { current.x + dirs[i].x, current.y + dirs[i].y };
+            point next = { current + dirs[i] };
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
@@ -200,14 +199,14 @@ std::string bfs(point start,
 
         for (int i = 0; i < 4; i++) {
             int dir = order[i];
-            point next = { current.x + dirs[dir].x, current.y + dirs[dir].y };
+            point next = current + dirs[dir];
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
 
             float costValue = cost(dir, blocks[current.x][current.y].info.step + 1);
             visited_qty++;
-            if (next.x == target.x && next.y == target.y) {
+            if (next == target) {
                 std::cout << "Found target\n"
                     << blocks[current.x][current.y].info.cost + 1 << "\n";
                 blocks[next.x][next.y].info.cost = blocks[current.x][current.y].info.cost + costValue;
@@ -258,14 +257,14 @@ std::string dijkstra(point start,
         point current = *min;
         pq.erase(min);
 
-        if (current.x == target.x && current.y == target.y) {
+        if (current == target) {
             std::cout << "Found target\n";
             if (animate) calculate_path(start, target, blocks, shouldDraw);
             return generate_log(start, target, visited_qty, generated_qty, blocks, "dijkstra", cost_id, -1, blocks[current.x][current.y].info.cost);
         }
 
         for (int i = 0; i < 4; i++) {
-            point next = { current.x + dirs[i].x, current.y + dirs[i].y };
+            point next = { current + dirs[i] };
 
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
@@ -319,14 +318,37 @@ std::string greedy_search(
         point current = *min_it;
         open.erase(min_it);
 
-        if (current.x == target.x && current.y == target.y) {
+        if (current == target) {
             std::cout << "Found target\n";
+            std::vector<point> path = {  };
+            auto node = target;
+
+            while (node.x != -1 && node.y != -1) {
+                path.push_back(node);
+                node = nodes[node.x][node.y].info.from;
+            }
+            auto first = path.end() - 1;
+            nodes[first->x][first->y].info.cost = 0;
+            for (;first != path.begin() + 1;first--) {
+                auto next = first - 1;
+                point dir = *first - *next;
+                int index = -1;
+                for (int j = 0; j < 4; j++) {
+                    if (dirs[j] == dir) {
+                        index = j;
+                        break;
+                    }
+                }
+                nodes[next->x][next->y].info.cost =
+                    nodes[first->x][first->y].info.cost + cost(index, nodes[first->x][first->y].info.step + 1);
+            }
+
             if (animate) calculate_path(start, target, nodes, shouldDraw);
             return generate_log(start, target, visited_qty, generated_qty, nodes, "greedy_search", cost_id, heuristic_id, nodes[current.x][current.y].info.cost);
         }
 
         for (int i = 0; i < 4; i++) {
-            point next = { current.x + dirs[i].x, current.y + dirs[i].y };
+            point next = current + dirs[i];
 
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
