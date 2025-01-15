@@ -6,6 +6,7 @@
 #include <print.h>
 #include <heuristics.h>
 #include <queue>
+#include <set>
 
 #pragma once
 
@@ -53,7 +54,8 @@ std::string a_star(
     bool& shouldDraw,
     int cost_id,
     int heuristic_id,
-    bool animate = false
+    bool animate = false,
+    std::set<point> goals = {}
 );
 
 std::string dijkstra(

@@ -2,4 +2,4 @@
 
 #pragma once
 
-const int space_size = 31;
+const int space_size = 3;

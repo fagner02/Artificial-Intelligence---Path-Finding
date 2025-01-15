@@ -22,6 +22,7 @@
 #include <experiments.h>
 #include <json/json.h>
 #include <GL/gl.h>
+#include <set>
 
 void draw(
     sf::Vector2u& size,
@@ -92,16 +93,6 @@ auto create_label(
     _label.text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2 - textSize.width / 2, pos.y + boxSize.y / 2.0 - textSize.height + 5));
     pos.y += boxSize.y + 5;
     return _label;
-}
-
-void draw_tree(node root) {
-    // sf::CircleShape circle(10);
-    // circle.setFillColor(sf::Color(100, 100, 100));
-    // circle.setPosition(100, 100);
-    // window.draw(circle);
-    // for (int i = 0; i < root.children.size(); i++) {
-    //     draw_tree(root.children[i]);
-    // }
 }
 
 auto create_textbox(
@@ -222,6 +213,7 @@ int main() {
 
     point start = { 0, 0 };
     point target = { 0, 30 };
+    std::set<point> goals = { point{5, 15} };
     std::vector<button> buttons = {
         {&texts[0], [&]() {
             auto a1 = std::thread([&]() {
@@ -254,7 +246,7 @@ int main() {
         {&texts[4],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << a_star(start, target, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true) << "\n";
+                std::cout << a_star(start, target, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true, goals) << "\n";
             });
             a1.detach();
         }}

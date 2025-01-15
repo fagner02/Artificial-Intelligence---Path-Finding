@@ -15,6 +15,10 @@ point operator-(const point& lhs, const point& rhs);
 
 bool operator==(const point& lhs, const point& rhs);
 
+bool operator!=(const point& lhs, const point& rhs);
+
+bool operator<(const point& lhs, const point& rhs);
+
 struct node;
 
 struct visited_info {
@@ -22,6 +26,7 @@ struct visited_info {
     float heuristic;
     int step;
     node* from;
+    bool found_goal = false;
 };
 
 struct block {

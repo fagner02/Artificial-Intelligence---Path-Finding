@@ -140,6 +140,21 @@ std::string dfs(
     return "null";
 }
 
+void print_tree(node* root, int level = 0) {
+    if (root == nullptr) {
+        return;
+    }
+
+    for (int i = 0; i < level; ++i) {
+        std::cout << "   ";
+    }
+
+    std::cout << "Node: (" << root->pos.x << ", " << root->pos.y << ")\n";
+    for (node* child : root->children) {
+        print_tree(child, level + 1);
+    }
+}
+
 std::string a_star(
     point start,
     point target,
@@ -149,11 +164,12 @@ std::string a_star(
     bool& shouldDraw,
     int cost_id,
     int heuristic_id,
-    bool animate
+    bool animate,
+    std::set<point> goals
 ) {
     std::vector <node*> tree_nodes = {
         new node{
-            visited_info{-1,-1,-1},
+            visited_info{-1,-1,-1,nullptr},
             {},
             nullptr,
             start
@@ -179,14 +195,16 @@ std::string a_star(
             return a->data.cost + heuristic(a->pos, target) < b->data.cost + heuristic(b->pos, target);
             }
         );
+
         node* current = *min;
         open.erase(min);
 
         closed.push_back(current);
         generated_qty++;
 
-        if (current->pos == target) {
+        if (current->pos == target && current->data.found_goal) {
             std::cout << "Found target\n";
+            print_tree(tree_nodes[0]);
             if (animate) calculate_path(*tree_nodes[0], *current, blocks, shouldDraw);
             return "";
             //return generate_log(start, target, closed.size(), open.size(), blocks, "a_star", cost_id, heuristic_id, current->data.cost);
@@ -205,29 +223,30 @@ std::string a_star(
             visited_qty++;
             float new_cost = current->data.cost + cost(i, current->data.step + 1);
 
-            auto found = find_if(open.begin(), open.end(),
-                [&](node* n) {
-                    return n->pos == next;
-                });
-            auto existent = std::find_if(current->children.begin(), current->children.end(), [&](node* n) {
-                return n->pos == next;
-                });
+            auto found = find_if(
+                open.begin(),
+                open.end(),
+                [&](node* n) { return n->pos == next && n->data.found_goal; }
+            );
+
+            node* next_node = nullptr;
+
             if (found == open.end()) {
                 tree_nodes.push_back(
                     new node{
-                        visited_info{-1,-1,-1},
+                        visited_info{-1,-1,-1, nullptr, current->data.found_goal || goals.find(next) != goals.end()},
                         {},
                         current,
                         next
                     }
                 );
-                node* new_node = tree_nodes[tree_nodes.size() - 1];
-                open.push_back(new_node);
+                next_node = tree_nodes[tree_nodes.size() - 1];
+                current->children.push_back(next_node);
+                open.push_back(next_node);
                 generated_qty++;
-            } else if (new_cost >= (*existent)->data.cost) {
-                continue;
+            } else {
+                next_node = *found;
             }
-            auto next_node = existent == current->children.end() ? tree_nodes[tree_nodes.size() - 1] : *existent;
 
             next_node->data.step = current->data.step + 1;
             next_node->data.cost = new_cost;
@@ -238,7 +257,7 @@ std::string a_star(
             if (animate) set_block_colors(blocks, next, shouldDraw);
         }
     }
-
+    print_tree(tree_nodes[0]);
     return "null";
 }
 
