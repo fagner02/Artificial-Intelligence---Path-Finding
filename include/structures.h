@@ -15,11 +15,13 @@ point operator-(const point& lhs, const point& rhs);
 
 bool operator==(const point& lhs, const point& rhs);
 
+struct node;
+
 struct visited_info {
     float cost;
     float heuristic;
     int step;
-    point from;
+    node* from;
 };
 
 struct block {
@@ -41,6 +43,12 @@ struct button {
     bool pressed = false;
 };
 
+struct node {
+    visited_info data;
+    std::vector<node*> children;
+    node* parent;
+    point pos;
+};
 
 const point dirs[] = {
     /*0: left*/ {-1, 0},

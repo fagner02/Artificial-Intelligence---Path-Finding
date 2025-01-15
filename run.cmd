@@ -14,7 +14,9 @@ src\rectshape.cpp ^
 -lsfml-graphics ^
 -lsfml-window ^
 -lsfml-system ^
--lsfml-network 
+-lsfml-network ^
+-ljsoncpp ^
+-lopengl32
 @REM g++ -std=c++17 -Wall -Wextra -LC:\msys64\mingw32\lib -I.\include -IC:\msys64\mingw32\include -o main.exe ^
 @REM src\structures.cpp ^
 @REM src\print.cpp ^

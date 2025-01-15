@@ -20,6 +20,8 @@
 #include <vector>
 #include <fstream>
 #include <experiments.h>
+#include <json/json.h>
+#include <GL/gl.h>
 
 void draw(
     sf::Vector2u& size,
@@ -27,7 +29,6 @@ void draw(
     float& containerSize,
     float& blockSize,
     block blocks[space_size][space_size],
-    std::vector<label> texts,
     sf::Vector2f scale,
     sf::Vector2f translate
 ) {
@@ -59,10 +60,6 @@ void draw(
 
             window.draw(blocks[x][y].text);
         }
-    }
-    for (int i = 0; i < texts.size();i++) {
-        window.draw(texts[i].box);
-        window.draw(texts[i].text);
     }
 }
 
@@ -96,6 +93,55 @@ auto create_label(
     pos.y += boxSize.y + 5;
     return _label;
 }
+
+void draw_tree(node root) {
+    // sf::CircleShape circle(10);
+    // circle.setFillColor(sf::Color(100, 100, 100));
+    // circle.setPosition(100, 100);
+    // window.draw(circle);
+    // for (int i = 0; i < root.children.size(); i++) {
+    //     draw_tree(root.children[i]);
+    // }
+}
+
+auto create_textbox(
+    sf::Font& font,
+    sf::Vector2f& pos,
+    float pad,
+    sf::Vector2f size
+) {
+
+    label _label = {
+        sf::Text(),
+        sf::RoundedRectangleShape()
+    };
+    _label.text = (sf::Text());
+    _label.text.setFont(font);
+    _label.text.setCharacterSize(18);
+    auto textSize = _label.text.getGlobalBounds();
+    textSize.height *= 1;
+
+    auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height - 5 + pad * 2);
+
+    _label.box = sf::RoundedRectangleShape(size, 10, 20);
+    _label.box.setFillColor(sf::Color(100, 100, 100));
+    _label.box.setPosition(pos);
+    _label.box.setOutlineColor(sf::Color(255, 255, 255));
+    _label.box.setOutlineThickness(2);
+
+    _label.text.setPosition(sf::Vector2f(pos.x + pad - textSize.width / 2, pos.y + pad - textSize.height + 5));
+    pos.y += boxSize.y + 5;
+    return _label;
+}
+
+struct text_input {
+    label _label;
+    std::string value;
+    int cursor = 0;
+    sf::RectangleShape cursorLine = sf::RectangleShape(sf::Vector2f(1, 20));
+    bool hasFocus = false;
+};
+
 
 int main() {
     std::cout << "Hello, World!\n";
@@ -136,12 +182,31 @@ int main() {
         }
     }
 
+    // Json::Value root;
+    // std::ifstream file("./e.json");
+    // file >> root;
+
+    // std::cout << "initial: [\n";
+    // for (int i = 0; i < root["initial"].size(); i++) {
+    //     std::cout << "[" << root["initial"][i][0] << ", " << root["initial"][i][1] << "],\n";
+    // }
+    // std::cout << "]\n";
+
+    // return 0;
+
 
     // experiment1();
     // experiment2();
     // experiment3();
     // experiment4();
     // experiment5();
+
+    bool focused = false;
+
+    sf::Cursor textCursor;
+    textCursor.loadFromSystem(sf::Cursor::Text);
+    sf::Cursor arrowCursor;
+    arrowCursor.loadFromSystem(sf::Cursor::Arrow);
 
     std::vector<label> texts;
     sf::Vector2f pos(10, 10);
@@ -150,8 +215,13 @@ int main() {
     texts.push_back(create_label(font, pos, pad, "Dfs"));
     texts.push_back(create_label(font, pos, pad, "Greedy"));
     texts.push_back(create_label(font, pos, pad, "A*"));
+
+    std::vector<text_input> inputs = {
+        {create_textbox(font, pos, pad, { 200, 50 }), "a\nb"}
+    };
+
     point start = { 0, 0 };
-    point target = { 30, 30 };
+    point target = { 0, 30 };
     std::vector<button> buttons = {
         {&texts[0], [&]() {
             auto a1 = std::thread([&]() {
@@ -206,6 +276,42 @@ int main() {
                 window.setView(view);
                 translate = { size.x * scale.x, size.y * scale.y };
             }
+            if (event.type == sf::Event::TextEntered) {
+                for (int i = 0; i < inputs.size(); i++) {
+                    if (inputs[i].hasFocus) {
+                        if (event.text.unicode == 13) {
+                            inputs[i].value.insert(inputs[i].value.begin() + inputs[i].cursor, '\n');
+                            inputs[i].cursor++;
+                        } else if (event.text.unicode == 8) {
+                            if (inputs[i].cursor > 0) {
+                                inputs[i].value.erase(inputs[i].value.begin() + inputs[i].cursor - 1);
+                                inputs[i].cursor--;
+                            }
+                        } else {
+                            inputs[i].value.insert(inputs[i].value.begin() + inputs[i].cursor, static_cast<char>(event.text.unicode));
+                            inputs[i].cursor++;
+                        }
+                        inputs[i]._label.text.setString(inputs[i].value);
+                    }
+                }
+            }
+            if (event.type == sf::Event::MouseMoved) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                for (int i = 0; i < buttons.size(); i++) {
+                    if (buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        buttons[i]._label->box.setFillColor(sf::Color(150, 150, 150));
+                    } else {
+                        buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
+                    }
+                }
+                for (int i = 0; i < inputs.size(); i++) {
+                    if (inputs[i]._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                        window.setMouseCursor(textCursor);
+                    } else {
+                        window.setMouseCursor(arrowCursor);
+                    }
+                }
+            }
             if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -213,6 +319,23 @@ int main() {
                         if (buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                             buttons[i].pressed = true;
                             buttons[i]._label->box.setFillColor(sf::Color(200, 200, 200));
+                        }
+                    }
+                    for (int i = 0; i < inputs.size(); i++) {
+                        if (inputs[i]._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                            // inputs[i]._label->box.setFillColor(sf::Color(130, 130, 130));
+                            inputs[i].hasFocus = true;
+                            focused = true;
+                            for (int j = 0; j < inputs[i].value.size(); j++) {
+                                auto pos = inputs[i]._label.text.findCharacterPos(j);
+                                if (pos.x < mousePos.x) {
+                                    inputs[i].cursor = j + 1;
+                                }
+                            }
+                        } else {
+                            inputs[i]._label.box.setFillColor(sf::Color(100, 100, 100));
+                            inputs[i].hasFocus = false;
+                            focused = false;
                         }
                     }
                 }
@@ -234,25 +357,46 @@ int main() {
             }
 
             if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Equal) {
-                    scale.x += 0.01;
-                    scale.y += 0.01;
-                }
-                if (event.key.code == sf::Keyboard::Dash) {
-                    scale.x -= 0.01;
-                    scale.y -= 0.01;
-                }
-                if (event.key.code == sf::Keyboard::Up) {
-                    translate.y -= 50;
-                }
-                if (event.key.code == sf::Keyboard::Down) {
-                    translate.y += 50;
-                }
-                if (event.key.code == sf::Keyboard::Left) {
-                    translate.x -= 50;
-                }
-                if (event.key.code == sf::Keyboard::Right) {
-                    translate.x += 50;
+                if (focused) {
+                    if (event.key.code == sf::Keyboard::Left) {
+                        for (int i = 0; i < inputs.size(); i++) {
+                            if (inputs[i].hasFocus) {
+                                if (inputs[i].cursor > 0) {
+                                    inputs[i].cursor--;
+                                }
+                            }
+                        }
+                    }
+                    if (event.key.code == sf::Keyboard::Right) {
+                        for (int i = 0; i < inputs.size(); i++) {
+                            if (inputs[i].hasFocus) {
+                                if (inputs[i].cursor < inputs[i].value.size()) {
+                                    inputs[i].cursor++;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (event.key.code == sf::Keyboard::Equal) {
+                        scale.x += 0.01;
+                        scale.y += 0.01;
+                    }
+                    if (event.key.code == sf::Keyboard::Dash) {
+                        scale.x -= 0.01;
+                        scale.y -= 0.01;
+                    }
+                    if (event.key.code == sf::Keyboard::Up) {
+                        translate.y -= 50;
+                    }
+                    if (event.key.code == sf::Keyboard::Down) {
+                        translate.y += 50;
+                    }
+                    if (event.key.code == sf::Keyboard::Left) {
+                        translate.x -= 50;
+                    }
+                    if (event.key.code == sf::Keyboard::Right) {
+                        translate.x += 50;
+                    }
                 }
             }
 
@@ -260,8 +404,30 @@ int main() {
         }
 
         if (shouldDraw) {
-            draw(size, window, containerSize, blockSize, blocks, texts, scale, translate);
+            draw(size, window, containerSize, blockSize, blocks, scale, translate);
 
+            for (int i = 0; i < texts.size();i++) {
+                window.draw(texts[i].box);
+                window.draw(texts[i].text);
+                glDisable(GL_SCISSOR_TEST);
+            }
+            for (int i = 0; i < inputs.size(); i++) {
+                window.draw(inputs[i]._label.box);
+                auto elemPos = inputs[i]._label.box.getGlobalBounds();
+                glEnable(GL_SCISSOR_TEST);
+                glScissor(elemPos.left + pad, size.y - elemPos.top - elemPos.height + pad, elemPos.width - pad, elemPos.height - pad);
+                window.draw(inputs[i]._label.text);
+                glDisable(GL_SCISSOR_TEST);
+                if (inputs[i].hasFocus) {
+                    auto charSize = inputs[i]._label.text.findCharacterPos(inputs[i].cursor);
+                    auto b = inputs[i]._label.text.getCharacterSize();
+
+                    auto a = inputs[i]._label.text.getGlobalBounds();
+                    inputs[i].cursorLine.setPosition(charSize.x, charSize.y);
+                    inputs[i]._label.box.setPosition(inputs[i]._label.text.getPosition().x, a.top - floor((a.height) / (charSize.y - a.top)) * b);
+                    window.draw(inputs[i].cursorLine);
+                }
+            }
             window.display();
             shouldDraw = false;
         }

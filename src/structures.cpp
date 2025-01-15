@@ -19,7 +19,7 @@ void fill_blocks(
         for (int j = 0; j < space_size; j++) {
             blocks[i][j].info.cost = -1;
             blocks[i][j].info.heuristic = -1;
-            blocks[i][j].info.from = { -1, -1 };
+            blocks[i][j].info.from = nullptr;
         }
     }
 }

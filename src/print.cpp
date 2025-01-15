@@ -39,13 +39,13 @@ void print(point target, point next, point prev, block visited[space_size][space
 
 void set_path_block_colors(
     block blocks[space_size][space_size],
-    std::vector<point> path,
+    std::vector<node> path,
     bool& shouldDraw
 ) {
     for (int y = 0; y < space_size; y++) {
         for (int x = 0; x < space_size; x++) {
             point p = { x, y };
-            auto it = std::find(path.begin(), path.end(), p);
+            auto it = std::find_if(path.begin(), path.end(), [&](node a) { return a.pos == p;});
             auto yindex = y;
             if (it != path.end()) {
                 blocks[x][yindex].shape.setFillColor(sf::Color(100, 100, 200));
@@ -60,18 +60,20 @@ void set_path_block_colors(
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
-std::vector<point> calculate_path(point start, point target, block blocks[space_size][space_size], bool& shouldDraw) {
-    std::vector<point> path = {  };
+void calculate_path(node start, node target, block blocks[space_size][space_size], bool& shouldDraw) {
+    std::vector<node> path = {  };
 
-    while (target.x != -1 && target.y != -1) {
+    while (true) {
         path.push_back(target);
-        target = blocks[target.x][target.y].info.from;
         set_path_block_colors(blocks, path, shouldDraw);
+        if (target.data.from == nullptr) {
+            break;
+        }
+        target = *(target.data.from);
     }
-    return path;
 }
 
-void set_block_colors(
+void  set_block_colors(
     block blocks[space_size][space_size],
     point next,
     bool& shouldDraw
