@@ -39,15 +39,16 @@ void print(point target, point next, point prev, block visited[space_size][space
 
 void set_path_block_colors(
     block blocks[space_size][space_size],
-    std::vector<node> path,
+    std::vector<node>::iterator path_begin,
+    std::vector<node>::iterator path_end,
     bool& shouldDraw
 ) {
     for (int y = 0; y < space_size; y++) {
         for (int x = 0; x < space_size; x++) {
             point p = { x, y };
-            auto it = std::find_if(path.begin(), path.end(), [&](node a) { return a.pos == p;});
+            auto it = std::find_if(path_begin, path_end, [&](node a) { return a.pos == p;});
             auto yindex = y;
-            if (it != path.end()) {
+            if (it != path_end) {
                 blocks[x][yindex].shape.setFillColor(sf::Color(100, 100, 200));
             } else if (blocks[x][yindex].info.cost != -1) {
                 blocks[x][yindex].shape.setFillColor(sf::Color(100, 200, 100));
@@ -60,30 +61,46 @@ void set_path_block_colors(
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
-void calculate_path(node start, node target, block blocks[space_size][space_size], bool& shouldDraw) {
+std::vector<node> calculate_a_star_path(node target) {
     std::vector<node> path = {  };
 
     while (true) {
-        path.push_back(target);
-        set_path_block_colors(blocks, path, shouldDraw);
-        if (target.data.from == nullptr) {
-            break;
-        }
-        target = *(target.data.from);
-    }
-}
-void calculate_path(node target, block blocks[space_size][space_size], bool& shouldDraw) {
-    std::vector<node> path = {  };
-
-    while (true) {
-        blocks[target.pos.x][target.pos.y].info.cost = target.data.cost;
-        std::cout << target.pos.x << ", " << target.pos.y << ": " << target.data.cost << "\n";
-        path.push_back(target);
-        set_path_block_colors(blocks, path, shouldDraw);
+        path.emplace_back(target);
         if (target.parent == nullptr) {
             break;
         }
         target = *target.parent;
+    }
+    return path;
+}
+
+std::vector<node> calculate_path(node target) {
+    std::vector<node> path = {  };
+
+    while (true) {
+        path.emplace_back(target);
+        if (target.parent == nullptr) {
+            break;
+        }
+        target = *target.parent;
+    }
+
+    return path;
+}
+
+void animate_path(node target, block blocks[space_size][space_size], bool& shouldDraw) {
+    std::vector<node> path = calculate_path(target);
+
+    for (int i = 0; i <= path.size(); i++) {
+        set_path_block_colors(blocks, path.begin(), path.begin() + i, shouldDraw);
+    }
+}
+void animate_a_star_path(node target, block blocks[space_size][space_size], bool& shouldDraw) {
+    std::vector<node> path = calculate_a_star_path(target);
+
+    for (int i = 0; i <= path.size(); i++) {
+        blocks[target.pos.x][target.pos.y].info.cost = target.data.cost;
+        set_path_block_colors(blocks, path.begin(), path.begin() + i, shouldDraw);
     }
 }
 

@@ -103,7 +103,7 @@ std::string dfs(
                 visited_qty++;
                 generated_qty++;
 
-                if (animate) calculate_path(*tree_nodes[0], *new_node, blocks, shouldDraw);
+                if (animate) animate_path(*new_node, blocks, shouldDraw);
 
                 for (int i = 0; i < tree_nodes.size(); i++) {
                     std::cout << "Deleting node\n";
@@ -135,7 +135,7 @@ std::string dfs(
         }
     }
 
-    if (animate) calculate_path(*tree_nodes[0], *tree_nodes[tree_nodes.size() - 1], blocks, shouldDraw);
+    if (animate) animate_path(*tree_nodes[tree_nodes.size() - 1], blocks, shouldDraw);
 
     return "null";
 }
@@ -185,7 +185,7 @@ std::string a_star(
     tree_nodes[0]->data.heuristic = heuristic(start, target);
     tree_nodes[0]->data.step = 0;
     tree_nodes[0]->data.from = nullptr;
-    set_block_data(blocks, *tree_nodes[0]);
+    if (animate) set_block_data(blocks, *tree_nodes[0]);
 
     open.push_back(tree_nodes[0]);
     generated_qty++;
@@ -205,9 +205,9 @@ std::string a_star(
         if (current->pos == target && current->data.found_goal) {
             std::cout << "Found target\n";
             // print_tree(tree_nodes[0]);
-            if (animate) calculate_path(*current, blocks, shouldDraw);
+            if (animate) animate_path(*current, blocks, shouldDraw);
             return "";
-            //return generate_log(start, target, closed.size(), open.size(), blocks, "a_star", cost_id, heuristic_id, current->data.cost);
+            // return generate_log(start, target, closed.size(), open.size(), blocks, "a_star", cost_id, heuristic_id, current->data.cost);
         }
 
         for (int i = 0; i < 4; i++) {
@@ -257,7 +257,7 @@ std::string a_star(
                 next_node->data.heuristic = heuristic(next, target);
                 next_node->data.from = current;
                 next_node->data.found_goal = next_node->data.found_goal || haveGoal;
-                set_block_data(blocks, *next_node);
+                if (animate) set_block_data(blocks, *next_node);
                 continue;
             } else {
                 next_node = *found;
@@ -281,9 +281,12 @@ std::string a_star(
             next_node->data.heuristic = heuristic(next, target);
             next_node->data.from = current;
             next_node->data.found_goal = next_node->data.found_goal || haveGoal;
-            set_block_data(blocks, *next_node);
 
-            if (animate) set_block_colors(blocks, next, shouldDraw);
+
+            if (animate) {
+                set_block_data(blocks, *next_node);
+                set_block_colors(blocks, next, shouldDraw);
+            }
         }
     }
     // print_tree(tree_nodes[0]);
@@ -354,7 +357,7 @@ std::string bfs(point start,
                 new_node->data.step = current->data.step + 1;
                 new_node->data.from = current;
                 set_block_data(blocks, *new_node);
-                if (animate) calculate_path(*tree_nodes[0], *new_node, blocks, shouldDraw);
+                if (animate) animate_path(*new_node, blocks, shouldDraw);
                 return "";
                 // return generate_log(start, target, visited_qty, generated_qty, blocks, "bfs", cost_id, -1, new_node->data.cost, order);
             }
@@ -429,7 +432,7 @@ std::string dijkstra(point start,
 
         if (current->pos == target) {
             std::cout << "Found target\n";
-            if (animate) calculate_path(*tree_nodes[0], *current, blocks, shouldDraw);
+            if (animate) animate_path(*current, blocks, shouldDraw);
             return "";
             // return generate_log(start, target, visited_qty, generated_qty, blocks, "dijkstra", cost_id, -1, current->data.cost);
         }
@@ -542,7 +545,7 @@ std::string greedy_search(
                 set_block_colors(blocks, (*next)->pos, shouldDraw);
             }
 
-            if (animate) calculate_path(*tree_nodes[0], *current, blocks, shouldDraw);
+            if (animate) animate_path(*current, blocks, shouldDraw);
             return "";
             // return generate_log(start, target, visited_qty, generated_qty, blocks, "greedy_search", cost_id, heuristic_id, current->data.cost);
         }
