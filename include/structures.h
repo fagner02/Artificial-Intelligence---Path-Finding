@@ -29,6 +29,7 @@ struct visited_info {
     node* from;
     bool found_goal = false;
     std::string label = "";
+    bool visited = false;
 };
 
 struct block {
@@ -37,7 +38,7 @@ struct block {
     visited_info info;
 };
 
-void fill_blocks(block blocks[space_size][space_size], std::set<point> goals = {}, point start = { -1,-1 }, point target = { -1,-1 });
+void fill_blocks(block blocks[space_size][space_size], std::set<point> constraints = {}, point start = { -1,-1 }, point target = { -1,-1 });
 
 struct label_data {
     sf::Text text;

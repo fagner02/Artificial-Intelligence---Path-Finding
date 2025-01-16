@@ -283,7 +283,7 @@ int main() {
 
     point start = { 0, 0 };
     point target = { 0, 15 };
-    std::set<point> goals = { point{0, 20}, point{2, 22} };
+    std::set<point> constraints = { point{0, 20}, point{2, 22} };
 
     std::vector<button> buttons = {
         {&texts[0], [&]() {
@@ -310,14 +310,14 @@ int main() {
         {&texts[3],[&]() {
             auto a1 = std::thread([&]() {
                 fill_blocks(blocks);
-                std::cout << greedy_search(start, target, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true) << "\n";
+                std::cout << greedy_search(start, target, cost_all10, heuristic1, 0, 1, constraints, blocks, std::ref(shouldDraw), true) << "\n";
             });
             a1.detach();
         }},
         {&texts[4],[&]() {
             auto a1 = std::thread([&]() {
-                fill_blocks(blocks, goals,  start, target);
-                std::cout << a_star(start, target, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true, goals) << "\n";
+                fill_blocks(blocks, constraints,  start, target);
+                std::cout << a_star(start, target, cost_all10, heuristic1, 0, 1, constraints, blocks, std::ref(shouldDraw), true) << "\n";
             });
             a1.detach();
         }}

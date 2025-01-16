@@ -15,11 +15,11 @@ std::string generate_log(
     point target,
     int visited_qty,
     int generated_qty,
-    block blocks[space_size][space_size],
     std::string algorithm,
     int cost_id,
     int heuristic_id,
     float cost,
+    std::vector<node> path,
     std::vector<int> order
 );
 
@@ -50,12 +50,12 @@ std::string a_star(
     point target,
     cost_fn cost,
     heuristic_fn heuristic,
-    block nodes[space_size][space_size],
-    bool& shouldDraw,
     int cost_id,
     int heuristic_id,
-    bool animate = false,
-    std::set<point> goals = {}
+    std::set<point> constraints,
+    block blocks[space_size][space_size],
+    bool& shouldDraw,
+    bool animate = false
 );
 
 std::string dijkstra(
@@ -73,9 +73,10 @@ std::string greedy_search(
     point target,
     cost_fn cost,
     heuristic_fn heuristic,
-    block nodes[space_size][space_size],
-    bool& shouldDraw,
     int cost_id,
     int heuristic_id,
+    std::set<point> constraints,
+    block nodes[space_size][space_size],
+    bool& shouldDraw,
     bool animate = false
 );

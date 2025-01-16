@@ -50,7 +50,7 @@ void experiment2() {
             file1 << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
             for (int k = 0; k < 2; k++) {
                 fill_blocks(blocks);
-                file1 << a_star(start, target, cost, heuristic_fns[k], blocks, std::ref(shouldDraw), j, k) << "\n";
+                file1 << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }
@@ -75,9 +75,9 @@ void experiment3() {
 
             for (int k = 0; k < 2; k++) {
                 fill_blocks(blocks);
-                file2 << greedy_search(start, target, cost, heuristic_fns[k], blocks, std::ref(shouldDraw), j, k) << "\n";
+                file2 << greedy_search(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
                 fill_blocks(blocks);
-                file2 << a_star(start, target, cost, heuristic_fns[k], blocks, std::ref(shouldDraw), j, k) << "\n";
+                file2 << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }

@@ -41,6 +41,38 @@ std::string generate_log(
     return ss.str();
 }
 
+bool satisfiesConstraint(node* n, node* parent, std::set<point> constraints) {
+    bool parentFoundGoal = parent == nullptr ? false : parent->data.found_goal;
+    return constraints.size() == 0 || (parentFoundGoal || constraints.find(n->pos) != constraints.end());
+}
+
+bool satisfiesConstraint(point n, node* parent, std::set<point> constraints) {
+    bool parentFoundGoal = parent == nullptr ? false : parent->data.found_goal;
+    return constraints.size() == 0 || (parentFoundGoal || constraints.find(n) != constraints.end());
+}
+
+node* add_node(std::vector<node*>& tree_nodes, node* parent, point pos, std::set<point> constraints, float cost, float heuristic) {
+    tree_nodes.push_back(
+        new node{
+            visited_info{
+                cost,
+                heuristic,
+                parent == nullptr ? 0 : parent->data.step + 1,
+                parent
+            },
+            {},
+            parent,
+            pos
+        }
+    );
+    auto new_node = tree_nodes[tree_nodes.size() - 1];
+    new_node->data.found_goal = satisfiesConstraint(new_node, parent, constraints);
+    if (parent != nullptr) {
+        parent->children.push_back(new_node);
+    }
+    return new_node;
+}
+
 void set_block_data(block blocks[space_size][space_size], node n) {
     blocks[n.pos.x][n.pos.y].info.cost = n.data.cost;
     blocks[n.pos.x][n.pos.y].info.heuristic = n.data.heuristic;
@@ -52,19 +84,18 @@ int count_tree_nodes(node* root) {
     std::vector<node*> stack = { root };
     int count = 0;
 
-    std::cout << "in\n";
     while (!stack.empty()) {
         node* current = stack.back();
         stack.pop_back();
         count++;
-        std::cout << "run";
+
         for (node* child : current->children) {
             stack.push_back(child);
         }
     }
-    std::cout << "out\n";
     return count;
 }
+
 std::string dfs(
     point start,
     point target,
@@ -74,22 +105,21 @@ std::string dfs(
     std::vector<int> order,
     bool animate
 ) {
-    int visited_qty = 1;
-    int generated_qty = 0;
+    int visited_qty = 0;
 
     std::vector<node*> tree_nodes = { new node{{-1,-1,-1},{}, nullptr, start } };
-    generated_qty++;
+
+    add_node(tree_nodes, nullptr, start, {}, 0, -1);
 
     std::stack<node*> stack;
     stack.push(tree_nodes[0]);
-    tree_nodes[0]->data.cost = 0;
-    tree_nodes[0]->data.step = 0;
-    tree_nodes[0]->data.from = nullptr;
-    set_block_data(blocks, *tree_nodes[0]);
+
+    if (animate) set_block_data(blocks, *tree_nodes[0]);
 
     while (!stack.empty()) {
         node* current = stack.top();
         stack.pop();
+        visited_qty++;
 
         for (int i = 0; i < 4; i++) {
             int dir = order[i];
@@ -98,56 +128,35 @@ std::string dfs(
                 continue;
             }
 
-            float costValue = cost(dir, current->data.step + 1);
+            float costValue = current->data.cost + cost(dir, current->data.step + 1);
 
-            auto existent = std::find_if(tree_nodes.begin(), tree_nodes.end(), [&](node* n) {
-                return n->pos == next;
-                });
+            auto existent = std::find_if(tree_nodes.begin(), tree_nodes.end(),
+                [&](node* n) {
+                    return n->pos == next;
+                }
+            );
 
             if (next == target) {
-                std::cout << "Found target\n" << current->data.cost + 1 << "\n";
-                tree_nodes.push_back(
-                    new node{
-                        visited_info{-1,-1,-1},
-                        {},
-                        current,
-                    next
-                    }
-                );
-                generated_qty++;
-                node* new_node = tree_nodes[tree_nodes.size() - 1];
-                new_node->data.cost = current->data.cost + costValue;
-                new_node->data.step = current->data.step + 1;
-                new_node->data.from = current;
-                current->children.push_back(new_node);
-                set_block_data(blocks, *new_node);
-                visited_qty++;
+                std::cout << "Found target\n";
+                auto new_node = add_node(tree_nodes, current, next, {}, costValue, -1);
 
-                if (animate) animate_path(*new_node, blocks, shouldDraw);
+                if (animate) {
+                    set_block_data(blocks, *new_node);
+                    animate_path(*new_node, blocks, shouldDraw);
+                }
 
                 return generate_log(start, target, visited_qty, count_tree_nodes(tree_nodes[0]), "dfs", cost_id, -1, new_node->data.cost, calculate_path(*new_node), order);
             }
             if (existent == tree_nodes.end()) {
-                tree_nodes.push_back(
-                    new node{
-                        visited_info{-1,-1,-1},
-                        {},
-                        current,
-                    next
-                    }
-                );
-                generated_qty++;
-                node* new_node = tree_nodes[tree_nodes.size() - 1];
-                current->children.push_back(new_node);
-                stack.push(new_node);
-                new_node->data.cost = current->data.cost + costValue;
-                new_node->data.step = current->data.step + 1;
-                new_node->data.from = current;
-                visited_qty++;
-                set_block_data(blocks, *new_node);
-                if (animate) set_block_colors(blocks, next, shouldDraw);
-            }
+                node* new_node = add_node(tree_nodes, current, next, {}, costValue, -1);
 
+                stack.push(new_node);
+
+                if (animate) {
+                    set_block_data(blocks, *new_node);
+                    set_block_colors(blocks, next, shouldDraw);
+                }
+            }
         }
     }
 
@@ -171,41 +180,28 @@ void print_tree(node* root, int level = 0) {
     }
 }
 
-
 std::string a_star(
     point start,
     point target,
     cost_fn cost,
     heuristic_fn heuristic,
-    block blocks[space_size][space_size],
-    bool& shouldDraw,
     int cost_id,
     int heuristic_id,
-    bool animate,
-    std::set<point> goals
+    std::set<point> constraints,
+    block blocks[space_size][space_size],
+    bool& shouldDraw,
+    bool animate
 ) {
-    std::vector <node*> tree_nodes = {
-        new node{
-            visited_info{-1,-1,-1,nullptr},
-            {},
-            nullptr,
-            start
-        }
-    };
-    std::vector<node*> open;
-    std::vector<node*> closed;
-
-    int visited_qty = 1;
-    int generated_qty = 0;
-
-    tree_nodes[0]->data.cost = 0;
-    tree_nodes[0]->data.heuristic = heuristic(start, target);
-    tree_nodes[0]->data.step = 0;
-    tree_nodes[0]->data.from = nullptr;
+    std::vector <node*> tree_nodes = { };
+    add_node(tree_nodes, nullptr, start, constraints, 0, heuristic(start, target));
     if (animate) set_block_data(blocks, *tree_nodes[0]);
-    generated_qty++;
+
+    std::vector<node*> open;
+    std::vector<node*> visited;
 
     open.push_back(tree_nodes[0]);
+
+    int visited_qty = 0;
 
     while (!open.empty()) {
         auto min = min_element(open.begin(), open.end(), [&](node* a, node* b) {
@@ -215,65 +211,54 @@ std::string a_star(
 
         node* current = *min;
         open.erase(min);
+        visited_qty++;
 
-        closed.push_back(current);
+        visited.push_back(current);
 
         if (current->pos == target && current->data.found_goal) {
             std::cout << "Found target\n";
             // print_tree(tree_nodes[0]);
             if (animate) animate_path(*current, blocks, shouldDraw);
             std::vector<node> path = calculate_a_star_path(*current);
-            return generate_log(start, target, closed.size(), open.size(), "a_star", cost_id, heuristic_id, current->data.cost, path);
+            return generate_log(start, target, visited.size(), open.size(), "a_star", cost_id, heuristic_id, current->data.cost, path);
         }
 
         for (int i = 0; i < 4; i++) {
             point next = { current->pos + dirs[i] };
+
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
 
-            bool haveGoal = current->data.found_goal || goals.find(next) != goals.end();
+            bool haveGoal = satisfiesConstraint(next, current, constraints);
 
-            auto closed_node = find_if(closed.begin(), closed.end(), [&](node* a) {return a->pos == next;});
-            if (closed_node != closed.end()) {
-                if (haveGoal && !(*closed_node)->data.found_goal) {
-                    open.push_back(*closed_node);
-                    closed.erase(closed_node);
+            auto visited_node = find_if(visited.begin(), visited.end(), [&](node* a) {return a->pos == next;});
+            if (visited_node != visited.end()) {
+                if (haveGoal && !(*visited_node)->data.found_goal) {
+                    open.push_back(*visited_node);
+                    visited.erase(visited_node);
                 } else {
                     continue;
                 }
             }
-            visited_qty++;
+
             float new_cost = current->data.cost + cost(i, current->data.step + 1);
 
-            auto found = find_if(
-                open.begin(),
-                open.end(),
-                [&](node* n) { return n->pos == next && (!haveGoal || (haveGoal && n->data.found_goal));  }
+            auto found = find_if(open.begin(), open.end(),
+                [&](node* n) {
+                    return n->pos == next && (!haveGoal || (haveGoal && n->data.found_goal));
+                }
             );
 
             node* next_node = nullptr;
 
             if (found == open.end()) {
-                tree_nodes.push_back(
-                    new node{
-                        visited_info{-1,-1,-1, nullptr, haveGoal},
-                        {},
-                        current,
-                        next
-                    }
-                );
-                next_node = tree_nodes[tree_nodes.size() - 1];
+                next_node = add_node(tree_nodes, current, next, constraints, new_cost, heuristic(next, target));
+
                 open.push_back(next_node);
-                generated_qty++;
-                current->children.push_back(next_node);
-                next_node->parent = current;
-                next_node->data.step = current->data.step + 1;
-                next_node->data.cost = new_cost;
-                next_node->data.heuristic = heuristic(next, target);
-                next_node->data.from = current;
-                next_node->data.found_goal = next_node->data.found_goal || haveGoal;
+
                 if (animate) set_block_data(blocks, *next_node);
+
                 continue;
             } else {
                 next_node = *found;
@@ -281,24 +266,7 @@ std::string a_star(
             if (next_node->data.cost > new_cost && (next_node->data.found_goal || !haveGoal)) {
                 continue;
             }
-            tree_nodes.push_back(
-                new node{
-                    visited_info{-1,-1,-1, nullptr, haveGoal},
-                    {},
-                    current,
-                    next
-                }
-            );
-            generated_qty++;
-            next_node = tree_nodes[tree_nodes.size() - 1];
-            current->children.push_back(next_node);
-            next_node->parent = current;
-            next_node->data.cost = new_cost;
-            next_node->data.step = current->data.step + 1;
-            next_node->data.heuristic = heuristic(next, target);
-            next_node->data.from = current;
-            next_node->data.found_goal = next_node->data.found_goal || haveGoal;
-
+            next_node = add_node(tree_nodes, current, next, constraints, new_cost, heuristic(next, target));
 
             if (animate) {
                 set_block_data(blocks, *next_node);
@@ -307,7 +275,7 @@ std::string a_star(
         }
     }
     // print_tree(tree_nodes[0]);
-    return generate_log(start, target, closed.size(), open.size(), "a_star", cost_id, heuristic_id, -1, {}, {});
+    return generate_log(start, target, visited.size(), open.size(), "a_star", cost_id, heuristic_id, -1, {}, {});
 }
 
 std::string bfs(point start,
@@ -319,30 +287,20 @@ std::string bfs(point start,
     std::vector<int> order,
     bool animate
 ) {
-    int visited_qty = 1;
-    int generated_qty = 0;
+    std::vector<node*> tree_nodes = { };
 
-    std::vector<node*> tree_nodes = {
-        new node {
-            visited_info { -1, -1, -1},
-            {},
-            nullptr,
-            start
-        }
-    };
+    int visited_qty = 0;
+    add_node(tree_nodes, nullptr, start, {}, 0, 0);
 
     std::queue<node*> queue;
     queue.push(tree_nodes[0]);
-    generated_qty++;
 
-    tree_nodes[0]->data.cost = 0;
-    tree_nodes[0]->data.step = 0;
-    tree_nodes[0]->data.from = nullptr;
-    set_block_data(blocks, *tree_nodes[0]);
+    if (animate) set_block_data(blocks, *tree_nodes[0]);
 
     while (!queue.empty()) {
         node* current = queue.front();
         queue.pop();
+        visited_qty++;
 
         for (int i = 0; i < 4; i++) {
             int dir = order[i];
@@ -353,53 +311,31 @@ std::string bfs(point start,
 
             float costValue = current->data.cost + cost(dir, current->data.step + 1);
 
-            auto existent = std::find_if(tree_nodes.begin(), tree_nodes.end(), [&](node* n) {
-                return n->pos == next;
-                });
+            auto existent = std::find_if(tree_nodes.begin(), tree_nodes.end(),
+                [&](node* n) {
+                    return n->pos == next;
+                }
+            );
             if (next == target) {
                 std::cout << "Found target\n" << current->data.cost + 1 << "\n";
 
-                tree_nodes.push_back(
-                    new node{
-                        visited_info{-1,-1,-1},
-                        {},
-                        current,
-                    next
-                    }
-                );
-
-                node* new_node = tree_nodes[tree_nodes.size() - 1];
-
-                new_node->data.cost = costValue;
-                new_node->data.step = current->data.step + 1;
-                new_node->data.from = current;
-                set_block_data(blocks, *new_node);
-                if (animate) animate_path(*new_node, blocks, shouldDraw);
+                node* new_node = add_node(tree_nodes, current, next, {}, costValue, -1);
+                if (animate) {
+                    set_block_data(blocks, *new_node);
+                    animate_path(*new_node, blocks, shouldDraw);
+                }
                 return generate_log(start, target, visited_qty, count_tree_nodes(tree_nodes[0]), "bfs", cost_id, -1, new_node->data.cost, calculate_path(*new_node), order);
             }
 
             if (existent == tree_nodes.end()) {
-                tree_nodes.push_back(
-                    new node{
-                        visited_info{-1,-1,-1},
-                        {},
-                        current,
-                    next
-                    }
-                );
+                node* new_node = add_node(tree_nodes, current, next, {}, costValue, -1);
 
-                node* new_node = tree_nodes[tree_nodes.size() - 1];
-                current->children.push_back(new_node);
-
-                visited_qty++;
                 queue.push(new_node);
-                generated_qty++;
-                new_node->data.cost = costValue;
-                new_node->data.step = current->data.step + 1;
-                new_node->data.from = current;
-                set_block_data(blocks, *new_node);
 
-                if (animate)  set_block_colors(blocks, next, shouldDraw);
+                if (animate) {
+                    set_block_data(blocks, *new_node);
+                    set_block_colors(blocks, next, shouldDraw);
+                }
             }
         }
     }
@@ -414,39 +350,32 @@ std::string dijkstra(point start,
     int cost_id,
     bool animate
 ) {
-    std::vector<node*> tree_nodes = {
-        new node{
-            visited_info{-1,-1,-1},
-            {},
-            nullptr,
-        start
-        }
-    };
+    std::vector<node*> tree_nodes = { };
+
+    add_node(tree_nodes, nullptr, start, {}, 0, 0);
+
+    if (animate) set_block_data(blocks, *tree_nodes[0]);
+
+    int visited_qty = 0;
+
     std::vector<node*> pq;
-
-    tree_nodes[0]->data.cost = 0;
-    tree_nodes[0]->data.step = 0;
-    tree_nodes[0]->data.from = nullptr;
-    set_block_data(blocks, *tree_nodes[0]);
-
-    int visited_qty = 1;
-    int generated_qty = 0;
-
     pq.push_back(tree_nodes[0]);
-    generated_qty++;
 
     while (!pq.empty()) {
-        auto min = min_element(pq.begin(), pq.end(), [&](node* a, node* b) {
-            return a->data.cost < b->data.cost;
-            });
+        auto min = min_element(pq.begin(), pq.end(),
+            [&](node* a, node* b) {
+                return a->data.cost < b->data.cost;
+            }
+        );
 
         node* current = *min;
         pq.erase(min);
+        current->data.visited = true;
+        visited_qty++;
 
         if (current->pos == target) {
             std::cout << "Found target\n";
             if (animate) animate_path(*current, blocks, shouldDraw);
-            return "";
             return generate_log(start, target, visited_qty, count_tree_nodes(tree_nodes[0]), "dijkstra", cost_id, -1, current->data.cost, calculate_path(*current));
         }
 
@@ -457,34 +386,23 @@ std::string dijkstra(point start,
                 continue;
             }
 
-            visited_qty++;
-
-            auto existent = std::find_if(tree_nodes.begin(), tree_nodes.end(), [&](node* n) {
-                return n->pos == next;
-                });
+            auto existent = std::find_if(tree_nodes.begin(), tree_nodes.end(),
+                [&](node* n) {
+                    return n->pos == next;
+                }
+            );
 
             float costValue = cost(i, current->data.step + 1);
             float new_cost = current->data.cost + costValue;
 
             if (existent == tree_nodes.end() || new_cost < (*existent)->data.cost) {
-                tree_nodes.push_back(
-                    new node{
-                        visited_info{-1,-1,-1},
-                        {},
-                        current,
-                    next
-                    }
-                );
-
-                node* next_node = tree_nodes[tree_nodes.size() - 1];
-
-                next_node->data.cost = new_cost;
-                next_node->data.step = current->data.step + 1;
-                next_node->data.from = current;
+                node* next_node = add_node(tree_nodes, current, next, {}, new_cost, -1);
                 pq.push_back(next_node);
-                set_block_data(blocks, *next_node);
-                generated_qty++;
-                if (animate) set_block_colors(blocks, next, shouldDraw);
+
+                if (animate) {
+                    set_block_data(blocks, *next_node);
+                    set_block_colors(blocks, next, shouldDraw);
+                }
             }
         }
     }
@@ -492,73 +410,91 @@ std::string dijkstra(point start,
     return generate_log(start, target, visited_qty, count_tree_nodes(tree_nodes[0]), "dijkstra", cost_id, -1, -1, {});
 }
 
+void animate_greedy_search_cost(std::vector<node*> path, block blocks[space_size][space_size], bool& shouldDraw) {
+    for (auto it = path.begin(); it != path.end(); it++) {
+        set_block_data(blocks, *(*it));
+        set_block_colors(blocks, (*it)->pos, shouldDraw);
+    }
+}
+
+std::vector<node*> greedy_search_cost(node* target, cost_fn cost, block blocks[space_size][space_size], bool& shouldDraw) {
+    std::vector<node*> path = {  };
+    auto curr = target;
+    while (curr != nullptr) {
+        path.push_back(curr);
+        curr = curr->parent;
+    }
+    auto first = path.end() - 1;
+    (*first)->data.cost = 0;
+    for (;first != path.begin();first--) {
+        auto next = first - 1;
+        point dir = (*first)->pos - (*next)->pos;
+        int index = -1;
+        for (int j = 0; j < 4; j++) {
+            if (dirs[j] == dir) {
+                index = j;
+                break;
+            }
+        }
+        (*next)->data.cost = (*first)->data.cost + cost(index, (*first)->data.step + 1);
+    }
+
+    return path;
+}
+
+/// @brief Busca gulosa
+/// @param start ponto inicial da busca
+/// @param target ponto final da busca
+/// @param cost função de custo
+/// @param heuristic função de heurística
+/// @param cost_id id da função de custo
+/// @param heuristic_id id da função de heurística
+/// @param blocks parâmetro para animação
+/// @param shouldDraw parâmetro para animação 
+/// @param animate parâmetro para animação
+/// @return 
 std::string greedy_search(
     point start,
     point target,
     cost_fn cost,
     heuristic_fn heuristic,
-    block blocks[space_size][space_size],
-    bool& shouldDraw,
     int cost_id,
     int heuristic_id,
+    std::set<point> constraints,
+    block blocks[space_size][space_size],
+    bool& shouldDraw,
     bool animate
 ) {
-    std::vector<node*> tree_nodes = {
-        new node{
-            visited_info{-1,-1,-1},
-            {},
-            nullptr,
-        start
-        }
-    };
+    std::vector<node*> tree_nodes = {};
+
+    add_node(tree_nodes, nullptr, start, constraints, 0, heuristic(start, target));
+    if (animate) set_block_data(blocks, *tree_nodes[0]);
+
     std::vector<node*> open;
 
-    int visited_qty = 1;
-    int generated_qty = 0;
-
-    tree_nodes[0]->data.cost = 0;
-    tree_nodes[0]->data.heuristic = heuristic(start, target);
-    tree_nodes[0]->data.from = nullptr;
-    set_block_data(blocks, *tree_nodes[0]);
+    int visited_qty = 0;
 
     open.push_back(tree_nodes[0]);
-    generated_qty++;
 
     while (!open.empty()) {
-        auto min_it = min_element(open.begin(), open.end(), [&](node* a, node* b) {
-            return a->data.heuristic < b->data.heuristic;
-            });
+        auto min_it = min_element(open.begin(), open.end(),
+            [&](node* a, node* b) {
+                return a->data.heuristic < b->data.heuristic;
+            }
+        );
 
         node* current = *min_it;
         open.erase(min_it);
+        visited_qty++;
 
         if (current->pos == target) {
             std::cout << "Found target\n";
-            std::vector<node*> path = {  };
-            auto curr = current;
 
-            while (curr != nullptr) {
-                path.push_back(curr);
-                curr = curr->data.from;
+            auto path = greedy_search_cost(current, cost, blocks, shouldDraw);
+            if (animate) {
+                animate_greedy_search_cost(path, blocks, shouldDraw);
+                animate_path(*current, blocks, shouldDraw);
             }
-            auto first = path.end() - 1;
-            (*first)->data.cost = 0;
-            for (;first != path.begin();first--) {
-                auto next = first - 1;
-                point dir = (*first)->pos - (*next)->pos;
-                int index = -1;
-                for (int j = 0; j < 4; j++) {
-                    if (dirs[j] == dir) {
-                        index = j;
-                        break;
-                    }
-                }
-                (*next)->data.cost = (*first)->data.cost + cost(index, (*first)->data.step + 1);
-                set_block_data(blocks, *(*next));
-                set_block_colors(blocks, (*next)->pos, shouldDraw);
-            }
-
-            if (animate) animate_path(*current, blocks, shouldDraw);
 
             return generate_log(start, target, visited_qty, count_tree_nodes(tree_nodes[0]), "greedy_search", cost_id, heuristic_id, current->data.cost, calculate_path(*current));
         }
@@ -570,32 +506,22 @@ std::string greedy_search(
                 continue;
             }
 
-            visited_qty++;
-
-            auto existent = std::find_if(tree_nodes.begin(), tree_nodes.end(), [&](node* n) {
-                return n->pos == next;
-                });
+            auto existent = std::find_if(tree_nodes.begin(), tree_nodes.end(),
+                [&](node* n) {
+                    return n->pos == next;
+                }
+            );
             if (existent != tree_nodes.end()) {
                 continue;
             }
 
-            tree_nodes.push_back(
-                new node{
-                    visited_info{ -1, -1, -1 },
-                    {},
-                    current,
-                    next
-                }
-            );
-            auto next_node = tree_nodes[tree_nodes.size() - 1];
-            next_node->data.heuristic = heuristic(next, target);
-            next_node->data.from = current;
-            next_node->data.cost = 0;
-            set_block_data(blocks, *next_node);
+            auto new_node = add_node(tree_nodes, current, next, constraints, 0, heuristic(next, target));
 
-            open.push_back(next_node);
-            generated_qty++;
-            if (animate) set_block_colors(blocks, next, shouldDraw);
+            open.push_back(new_node);
+            if (animate) {
+                set_block_data(blocks, *new_node);
+                set_block_colors(blocks, next, shouldDraw);
+            }
         }
     }
 
