@@ -121,6 +121,7 @@ auto create_textbox(
     _label.box.setOutlineThickness(2);
 
     _label.text.setPosition(sf::Vector2f(pos.x + pad - textSize.width / 2, pos.y + pad - textSize.height + 5));
+
     pos.y += boxSize.y + 5;
     return _label;
 }
@@ -131,8 +132,42 @@ struct text_input {
     int cursor = 0;
     sf::RectangleShape cursorLine = sf::RectangleShape(sf::Vector2f(1, 20));
     bool hasFocus = false;
+    bool thumbPressed = false;
+    sf::RoundedRectangleShape scrollThumb = sf::RoundedRectangleShape(sf::Vector2f(10, 10), 5, 20);
 };
 
+void set_thumb_values(text_input& input, float pad) {
+    auto containerBox = input._label.box.getGlobalBounds();
+    auto textBox = input._label.text.getGlobalBounds();
+    containerBox.width -= pad * 2.0f;
+    containerBox.height -= pad * 2.0f;
+    float ratio = containerBox.height * 4 / containerBox.height;
+    if (ratio < 1) {
+        ratio = 1;
+    }
+    input.scrollThumb.setSize(sf::Vector2f(10, containerBox.height * 1.0f / ratio));
+    auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
+    input.scrollThumb.setPosition(containerBox.left + containerBox.width - scrollThumbBox.width + pad, containerBox.top + pad);
+
+}
+
+void set_thumb_pos(text_input& input, float pad, float ypos) {
+    float lower = input._label.box.getGlobalBounds().top + pad;
+    float upper = input._label.box.getGlobalBounds().top + input._label.box.getGlobalBounds().height - pad -
+        input.scrollThumb.getGlobalBounds().height;
+    if (ypos < lower) {
+        ypos = lower;
+    }
+    if (ypos > upper) {
+        ypos = upper;
+    }
+    input.scrollThumb.setPosition(input.scrollThumb.getPosition().x, ypos);
+}
+float get_scroll_sub(text_input& input, float pad) {
+    auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
+    auto containerBox = input._label.box.getGlobalBounds();
+    return (scrollThumbBox.top - containerBox.top - pad) / (containerBox.height - 2.0f * pad);
+}
 
 int main() {
     std::cout << "Hello, World!\n";
@@ -193,6 +228,8 @@ int main() {
     // experiment5();
 
     bool focused = false;
+    bool thumbPressed = false;
+    sf::Vector2f lastMousePos;
 
     sf::Cursor textCursor;
     textCursor.loadFromSystem(sf::Cursor::Text);
@@ -208,8 +245,10 @@ int main() {
     texts.push_back(create_label(font, pos, pad, "A*"));
 
     std::vector<text_input> inputs = {
-        {create_textbox(font, pos, pad, { 200, 50 }), "a\nb"}
+        {create_textbox(font, pos, pad, { 200, 60 }), "a\nb"}
     };
+
+    set_thumb_values(inputs[0], pad);
 
     point start = { 0, 0 };
     point target = { 0, 30 };
@@ -283,24 +322,38 @@ int main() {
                             inputs[i].value.insert(inputs[i].value.begin() + inputs[i].cursor, static_cast<char>(event.text.unicode));
                             inputs[i].cursor++;
                         }
+                        set_thumb_values(inputs[i], pad);
                         inputs[i]._label.text.setString(inputs[i].value);
                     }
                 }
             }
             if (event.type == sf::Event::MouseMoved) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                for (int i = 0; i < buttons.size(); i++) {
-                    if (buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        buttons[i]._label->box.setFillColor(sf::Color(150, 150, 150));
-                    } else {
-                        buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
+                if (thumbPressed) {
+                    for (int i = 0; i < inputs.size(); i++) {
+                        if (inputs[i].thumbPressed) {
+                            float ypos = inputs[i].scrollThumb.getGlobalBounds().top + (mousePos.y - lastMousePos.y);
+                            set_thumb_pos(inputs[i], pad, ypos);
+                            break;
+                        }
                     }
-                }
-                for (int i = 0; i < inputs.size(); i++) {
-                    if (inputs[i]._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                        window.setMouseCursor(textCursor);
-                    } else {
-                        window.setMouseCursor(arrowCursor);
+                    lastMousePos = sf::Vector2f(mousePos);
+                } else {
+                    for (int i = 0; i < buttons.size(); i++) {
+                        if (buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                            buttons[i]._label->box.setFillColor(sf::Color(150, 150, 150));
+                        } else {
+                            buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
+                        }
+                    }
+                    for (int i = 0; i < inputs.size(); i++) {
+                        if (inputs[i]._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y) &&
+                            !inputs[i].scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)
+                            ) {
+                            window.setMouseCursor(textCursor);
+                        } else {
+                            window.setMouseCursor(arrowCursor);
+                        }
                     }
                 }
             }
@@ -318,10 +371,16 @@ int main() {
                             // inputs[i]._label->box.setFillColor(sf::Color(130, 130, 130));
                             inputs[i].hasFocus = true;
                             focused = true;
-                            for (int j = 0; j < inputs[i].value.size(); j++) {
-                                auto pos = inputs[i]._label.text.findCharacterPos(j);
-                                if (pos.x < mousePos.x) {
-                                    inputs[i].cursor = j + 1;
+                            if (inputs[i].scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                                thumbPressed = true;
+                                inputs[i].thumbPressed = true;
+                                lastMousePos = sf::Vector2f(mousePos);
+                            } else {
+                                for (int j = 0; j < inputs[i].value.size(); j++) {
+                                    auto pos = inputs[i]._label.text.findCharacterPos(j);
+                                    if (pos.x < mousePos.x) {
+                                        inputs[i].cursor = j + 1;
+                                    }
                                 }
                             }
                         } else {
@@ -335,14 +394,24 @@ int main() {
             if (event.type == sf::Event::MouseButtonReleased) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                    for (int i = 0; i < buttons.size(); i++) {
-                        if (buttons[i].pressed && buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                            buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
-                            buttons[i].fn();
-                            buttons[i].pressed = false;
-                        } else {
-                            buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
-                            buttons[i].pressed = false;
+                    if (thumbPressed) {
+                        thumbPressed = false;
+                        for (int i = 0; i < inputs.size(); i++) {
+                            if (inputs[i].thumbPressed) {
+                                inputs[i].thumbPressed = false;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < buttons.size(); i++) {
+                            if (buttons[i].pressed && buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                                buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
+                                buttons[i].fn();
+                                buttons[i].pressed = false;
+                            } else {
+                                buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
+                                buttons[i].pressed = false;
+                            }
                         }
                     }
                 }
@@ -355,6 +424,7 @@ int main() {
                             if (inputs[i].hasFocus) {
                                 if (inputs[i].cursor > 0) {
                                     inputs[i].cursor--;
+
                                 }
                             }
                         }
@@ -364,6 +434,52 @@ int main() {
                             if (inputs[i].hasFocus) {
                                 if (inputs[i].cursor < inputs[i].value.size()) {
                                     inputs[i].cursor++;
+                                }
+                            }
+                        }
+                    }
+                    if (event.key.code == sf::Keyboard::Down) {
+                        for (auto& input : inputs) {
+                            if (input.hasFocus) {
+                                char c = input.value[input.cursor];
+                                auto index1 = input.value.find_last_of('\n', input.cursor - 1);
+                                if (index1 == std::string::npos || input.cursor == 0) {
+                                    index1 = 0;
+                                }
+                                auto index2 = input.value.find_first_of('\n', input.cursor);
+                                if (index2 == std::string::npos) {
+                                    index2 = input.value.size();
+                                }
+                                auto index3 = input.value.find_first_of('\n', index2 + 1);
+                                if (index3 == std::string::npos) {
+                                    index3 = input.value.size();
+                                }
+
+                                input.cursor = index2 + (input.cursor - index1) + (index1 == 0 ? 1 : 0);
+                                if (input.cursor > index3) {
+                                    input.cursor = index3;
+                                }
+                            }
+                        }
+                    }
+                    if (event.key.code == sf::Keyboard::Up) {
+                        for (auto& input : inputs) {
+                            if (input.hasFocus) {
+                                char c = input.value[input.cursor];
+                                auto index1 = input.value.find_last_of('\n', input.cursor + (c == '\n' ? -1 : -1));
+                                if (index1 == std::string::npos || input.cursor == 0) {
+                                    index1 = 0;
+                                }
+                                auto index2 = input.value.find_last_of('\n', index1 - 1);
+                                if (index2 == std::string::npos) {
+                                    index2 = 0;
+                                }
+                                input.cursor = index2 + (input.cursor - index1) + (index2 == 0 ? -1 : 0);
+                                if (input.cursor > index1) {
+                                    input.cursor = index1;
+                                }
+                                if (input.cursor < 0) {
+                                    input.cursor = 0;
                                 }
                             }
                         }
@@ -405,18 +521,28 @@ int main() {
             }
             for (int i = 0; i < inputs.size(); i++) {
                 window.draw(inputs[i]._label.box);
-                auto elemPos = inputs[i]._label.box.getGlobalBounds();
+
+                auto textBox = inputs[i]._label.text.getGlobalBounds();
+
+                auto containerBox = inputs[i]._label.box.getGlobalBounds();
+                containerBox.height -= pad * 2.0f;
+                containerBox.width -= pad * 2.0f;
+                float sub = get_scroll_sub(inputs[i], pad);
+
                 glEnable(GL_SCISSOR_TEST);
-                glScissor(elemPos.left + pad, size.y - elemPos.top - elemPos.height + pad, elemPos.width - pad, elemPos.height - pad);
+                glScissor(
+                    containerBox.left + pad,
+                    size.y - containerBox.top - containerBox.height - pad,
+                    containerBox.width,
+                    containerBox.height
+                );
+                inputs[i]._label.text.setPosition(containerBox.left + pad, containerBox.top + pad - sub * textBox.height);
                 window.draw(inputs[i]._label.text);
                 glDisable(GL_SCISSOR_TEST);
+                window.draw(inputs[i].scrollThumb);
                 if (inputs[i].hasFocus) {
                     auto charSize = inputs[i]._label.text.findCharacterPos(inputs[i].cursor);
-                    auto b = inputs[i]._label.text.getCharacterSize();
-
-                    auto a = inputs[i]._label.text.getGlobalBounds();
                     inputs[i].cursorLine.setPosition(charSize.x, charSize.y);
-                    inputs[i]._label.box.setPosition(inputs[i]._label.text.getPosition().x, a.top - floor((a.height) / (charSize.y - a.top)) * b);
                     window.draw(inputs[i].cursorLine);
                 }
             }
