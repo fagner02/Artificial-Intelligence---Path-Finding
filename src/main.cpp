@@ -136,19 +136,18 @@ struct text_input {
     sf::RoundedRectangleShape scrollThumb = sf::RoundedRectangleShape(sf::Vector2f(10, 10), 5, 20);
 };
 
-void set_thumb_values(text_input& input, float pad) {
+void set_thumb_values(text_input& input, float pad, bool set_pos = false) {
     auto containerBox = input._label.box.getGlobalBounds();
     auto textBox = input._label.text.getGlobalBounds();
     containerBox.width -= pad * 2.0f;
     containerBox.height -= pad * 2.0f;
-    float ratio = containerBox.height * 4 / containerBox.height;
+    float ratio = (textBox.height + 50) / containerBox.height;
     if (ratio < 1) {
         ratio = 1;
     }
     input.scrollThumb.setSize(sf::Vector2f(10, containerBox.height * 1.0f / ratio));
     auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
-    input.scrollThumb.setPosition(containerBox.left + containerBox.width - scrollThumbBox.width + pad, containerBox.top + pad);
-
+    if (set_pos) input.scrollThumb.setPosition(containerBox.left + containerBox.width - scrollThumbBox.width + pad, containerBox.top + pad);
 }
 
 void set_thumb_pos(text_input& input, float pad, float ypos) {
@@ -248,7 +247,7 @@ int main() {
         {create_textbox(font, pos, pad, { 200, 60 }), "a\nb"}
     };
 
-    set_thumb_values(inputs[0], pad);
+    set_thumb_values(inputs[0], pad, true);
 
     point start = { 0, 0 };
     point target = { 0, 30 };
@@ -378,8 +377,12 @@ int main() {
                             } else {
                                 for (int j = 0; j < inputs[i].value.size(); j++) {
                                     auto pos = inputs[i]._label.text.findCharacterPos(j);
-                                    if (pos.x < mousePos.x) {
+                                    if (pos.x < mousePos.x && pos.y < mousePos.y) {
                                         inputs[i].cursor = j + 1;
+                                        continue;
+                                    }
+                                    if (pos.x > mousePos.x && pos.y > mousePos.y) {
+                                        break;
                                     }
                                 }
                             }
@@ -459,6 +462,7 @@ int main() {
                                 if (input.cursor > index3) {
                                     input.cursor = index3;
                                 }
+                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + 10.0f);
                             }
                         }
                     }
@@ -481,9 +485,12 @@ int main() {
                                 if (input.cursor < 0) {
                                     input.cursor = 0;
                                 }
+
+                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - 10.0f);
                             }
                         }
                     }
+
                 } else {
                     if (event.key.code == sf::Keyboard::Equal) {
                         scale.x += 0.01;
