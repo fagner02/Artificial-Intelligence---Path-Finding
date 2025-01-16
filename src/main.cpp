@@ -141,19 +141,26 @@ void set_thumb_values(text_input& input, float pad, bool set_pos = false) {
     auto textBox = input._label.text.getGlobalBounds();
     containerBox.width -= pad * 2.0f;
     containerBox.height -= pad * 2.0f;
-    float ratio = (textBox.height + 50) / containerBox.height;
+    float ratio = (textBox.height + 5.0f) / containerBox.height;
     if (ratio < 1) {
         ratio = 1;
     }
-    input.scrollThumb.setSize(sf::Vector2f(10, containerBox.height * 1.0f / ratio));
-    auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
-    if (set_pos) input.scrollThumb.setPosition(containerBox.left + containerBox.width - scrollThumbBox.width + pad, containerBox.top + pad);
+    float height = containerBox.height / ratio;
+    if (height < 10.0f) height = 10.0f;
+    input.scrollThumb.setSize(sf::Vector2f(10.0f, height));
+    if (set_pos) {
+        auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
+        input.scrollThumb.setPosition(containerBox.left + containerBox.width - scrollThumbBox.width + pad, containerBox.top + pad);
+    }
 }
 
 void set_thumb_pos(text_input& input, float pad, float ypos) {
     float lower = input._label.box.getGlobalBounds().top + pad;
-    float upper = input._label.box.getGlobalBounds().top + input._label.box.getGlobalBounds().height - pad -
-        input.scrollThumb.getGlobalBounds().height;
+    float upper =
+        input._label.box.getGlobalBounds().top
+        + input._label.box.getGlobalBounds().height
+        - pad - input.scrollThumb.getGlobalBounds().height;
+
     if (ypos < lower) {
         ypos = lower;
     }
@@ -165,8 +172,26 @@ void set_thumb_pos(text_input& input, float pad, float ypos) {
 float get_scroll_sub(text_input& input, float pad) {
     auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
     auto containerBox = input._label.box.getGlobalBounds();
-    return (scrollThumbBox.top - containerBox.top - pad) / (containerBox.height - 2.0f * pad);
+    auto textBox = input._label.text.getGlobalBounds();
+    float diff = (containerBox.height - (2.0f * pad) - scrollThumbBox.height);
+    if (diff == 0) {
+        return 0;
+    }
+
+    float offset = textBox.height - (containerBox.height - 3.0f * pad);
+    if (offset < 0) offset = 0;
+    return offset * (scrollThumbBox.top - containerBox.top - pad) / diff;
 }
+
+void draw_char_selection(text_input& input, sf::RenderWindow& window, int k) {
+    auto pos = input._label.text.findCharacterPos(k);
+    auto glyph = input._label.text.getFont()->getGlyph(input.value[k], input._label.text.getCharacterSize(), false);
+    sf::RectangleShape rect(sf::Vector2f(glyph.bounds.width + 2, 20));
+    rect.setFillColor(sf::Color(100, 100, 200));
+    rect.setPosition(pos.x, pos.y);
+    window.draw(rect);
+}
+
 
 int main() {
     std::cout << "Hello, World!\n";
@@ -228,6 +253,12 @@ int main() {
 
     bool focused = false;
     bool thumbPressed = false;
+    bool charPressed = false;
+    bool selecting = false;
+    sf::Vector2f selectedChars;
+
+    sf::Vector2f lastCharPos;
+    sf::Vector2f firstCharPos;
     sf::Vector2f lastMousePos;
 
     sf::Cursor textCursor;
@@ -308,36 +339,65 @@ int main() {
                 translate = { size.x * scale.x, size.y * scale.y };
             }
             if (event.type == sf::Event::TextEntered) {
-                for (int i = 0; i < inputs.size(); i++) {
-                    if (inputs[i].hasFocus) {
+                for (auto& input : inputs) {
+                    if (input.hasFocus) {
                         if (event.text.unicode == 13) {
-                            inputs[i].value.insert(inputs[i].value.begin() + inputs[i].cursor, '\n');
-                            inputs[i].cursor++;
+                            input.value.insert(input.value.begin() + input.cursor, '\n');
+                            input.cursor++;
                         } else if (event.text.unicode == 8) {
-                            if (inputs[i].cursor > 0) {
-                                inputs[i].value.erase(inputs[i].value.begin() + inputs[i].cursor - 1);
-                                inputs[i].cursor--;
+                            if (selecting) {
+                                if (selectedChars.y > selectedChars.x) {
+                                    input.value.erase(input.value.begin() + selectedChars.x, input.value.begin() + selectedChars.y);
+                                    input.cursor = selectedChars.x;
+                                } else {
+                                    input.value.erase(input.value.begin() + selectedChars.y - 1, input.value.begin() + selectedChars.x);
+                                    input.cursor = selectedChars.y - 1;
+                                    if (selectedChars.y - 1 > input.value.size()) {
+                                        input.cursor = input.value.size();
+                                    }
+                                }
+                                selecting = false;
+                                charPressed = false;
+                            } else if (input.cursor > 0) {
+                                input.value.erase(input.value.begin() + input.cursor - 1);
+                                input.cursor--;
                             }
                         } else {
-                            inputs[i].value.insert(inputs[i].value.begin() + inputs[i].cursor, static_cast<char>(event.text.unicode));
-                            inputs[i].cursor++;
+                            input.value.insert(input.value.begin() + input.cursor, static_cast<char>(event.text.unicode));
+                            input.cursor++;
                         }
-                        set_thumb_values(inputs[i], pad);
-                        inputs[i]._label.text.setString(inputs[i].value);
+                        input._label.text.setString(input.value);
+                        set_thumb_values(input, pad);
                     }
                 }
             }
             if (event.type == sf::Event::MouseMoved) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 if (thumbPressed) {
-                    for (int i = 0; i < inputs.size(); i++) {
-                        if (inputs[i].thumbPressed) {
-                            float ypos = inputs[i].scrollThumb.getGlobalBounds().top + (mousePos.y - lastMousePos.y);
-                            set_thumb_pos(inputs[i], pad, ypos);
+                    for (auto& input : inputs) {
+                        if (input.thumbPressed) {
+                            float ypos = input.scrollThumb.getGlobalBounds().top + (mousePos.y - lastMousePos.y);
+                            set_thumb_pos(input, pad, ypos);
                             break;
                         }
                     }
                     lastMousePos = sf::Vector2f(mousePos);
+                } else if (charPressed) {
+                    for (auto& input : inputs) {
+                        if (input.hasFocus) {
+                            for (int j = 0; j < input.value.size(); j++) {
+                                auto pos = input._label.text.findCharacterPos(j);
+                                if (pos.x < mousePos.x && pos.y < mousePos.y) {
+                                    selectedChars.y = j + 1;
+                                    continue;
+                                }
+                                if (pos.x > mousePos.x && pos.y > mousePos.y) {
+                                    break;
+                                }
+                            }
+                        }
+                        selecting = true;
+                    }
                 } else {
                     for (int i = 0; i < buttons.size(); i++) {
                         if (buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
@@ -346,9 +406,9 @@ int main() {
                             buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
                         }
                     }
-                    for (int i = 0; i < inputs.size(); i++) {
-                        if (inputs[i]._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y) &&
-                            !inputs[i].scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)
+                    for (auto& input : inputs) {
+                        if (input._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y) &&
+                            !input.scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)
                             ) {
                             window.setMouseCursor(textCursor);
                         } else {
@@ -366,31 +426,36 @@ int main() {
                             buttons[i]._label->box.setFillColor(sf::Color(200, 200, 200));
                         }
                     }
-                    for (int i = 0; i < inputs.size(); i++) {
-                        if (inputs[i]._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                            // inputs[i]._label->box.setFillColor(sf::Color(130, 130, 130));
-                            inputs[i].hasFocus = true;
+                    for (auto& input : inputs) {
+                        if (input._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                            input._label.box.setOutlineColor(sf::Color(130, 130, 130));
+                            input.hasFocus = true;
                             focused = true;
-                            if (inputs[i].scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                            if (input.scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                                 thumbPressed = true;
-                                inputs[i].thumbPressed = true;
+                                input.thumbPressed = true;
                                 lastMousePos = sf::Vector2f(mousePos);
                             } else {
-                                for (int j = 0; j < inputs[i].value.size(); j++) {
-                                    auto pos = inputs[i]._label.text.findCharacterPos(j);
+                                for (int j = 0; j < input.value.size(); j++) {
+                                    auto pos = input._label.text.findCharacterPos(j);
                                     if (pos.x < mousePos.x && pos.y < mousePos.y) {
-                                        inputs[i].cursor = j + 1;
+                                        input.cursor = j + 1;
+                                        selectedChars.x = j + 1;
                                         continue;
                                     }
                                     if (pos.x > mousePos.x && pos.y > mousePos.y) {
                                         break;
                                     }
                                 }
+                                selectedChars.y = -1;
+                                charPressed = true;
                             }
                         } else {
-                            inputs[i]._label.box.setFillColor(sf::Color(100, 100, 100));
-                            inputs[i].hasFocus = false;
+                            input._label.box.setOutlineColor(sf::Color::White);
+                            input.hasFocus = false;
                             focused = false;
+                            selecting = false;
+                            charPressed = false;
                         }
                     }
                 }
@@ -400,12 +465,14 @@ int main() {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     if (thumbPressed) {
                         thumbPressed = false;
-                        for (int i = 0; i < inputs.size(); i++) {
-                            if (inputs[i].thumbPressed) {
-                                inputs[i].thumbPressed = false;
+                        for (auto& input : inputs) {
+                            if (input.thumbPressed) {
+                                input.thumbPressed = false;
                                 break;
                             }
                         }
+                    } else if (charPressed) {
+                        charPressed = false;
                     } else {
                         for (int i = 0; i < buttons.size(); i++) {
                             if (buttons[i].pressed && buttons[i]._label->box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
@@ -424,20 +491,25 @@ int main() {
             if (event.type == sf::Event::KeyPressed) {
                 if (focused) {
                     if (event.key.code == sf::Keyboard::Left) {
-                        for (int i = 0; i < inputs.size(); i++) {
-                            if (inputs[i].hasFocus) {
-                                if (inputs[i].cursor > 0) {
-                                    inputs[i].cursor--;
-
+                        for (auto& input : inputs) {
+                            if (input.hasFocus) {
+                                if (input.cursor > 0) {
+                                    input.cursor--;
+                                    if (input.value[input.cursor] == '\n') {
+                                        set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - input._label.text.getCharacterSize());
+                                    }
                                 }
                             }
                         }
                     }
                     if (event.key.code == sf::Keyboard::Right) {
-                        for (int i = 0; i < inputs.size(); i++) {
-                            if (inputs[i].hasFocus) {
-                                if (inputs[i].cursor < inputs[i].value.size()) {
-                                    inputs[i].cursor++;
+                        for (auto& input : inputs) {
+                            if (input.hasFocus) {
+                                if (input.cursor < input.value.size()) {
+                                    if (input.value[input.cursor] == '\n') {
+                                        set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + input._label.text.getCharacterSize());
+                                    }
+                                    input.cursor++;
                                 }
                             }
                         }
@@ -463,7 +535,7 @@ int main() {
                                 if (input.cursor > index3) {
                                     input.cursor = index3;
                                 }
-                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + 10.0f);
+                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + input._label.text.getCharacterSize());
                             }
                         }
                     }
@@ -487,7 +559,7 @@ int main() {
                                     input.cursor = 0;
                                 }
 
-                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - 10.0f);
+                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - input._label.text.getCharacterSize());
                             }
                         }
                     }
@@ -527,15 +599,15 @@ int main() {
                 window.draw(texts[i].text);
                 glDisable(GL_SCISSOR_TEST);
             }
-            for (int i = 0; i < inputs.size(); i++) {
-                window.draw(inputs[i]._label.box);
+            for (auto& input : inputs) {
+                window.draw(input._label.box);
 
-                auto textBox = inputs[i]._label.text.getGlobalBounds();
+                auto textBox = input._label.text.getGlobalBounds();
 
-                auto containerBox = inputs[i]._label.box.getGlobalBounds();
+                auto containerBox = input._label.box.getGlobalBounds();
                 containerBox.height -= pad * 2.0f;
                 containerBox.width -= pad * 2.0f;
-                float sub = get_scroll_sub(inputs[i], pad);
+                float sub = get_scroll_sub(input, pad);
 
                 glEnable(GL_SCISSOR_TEST);
                 glScissor(
@@ -544,15 +616,26 @@ int main() {
                     containerBox.width,
                     containerBox.height
                 );
-                inputs[i]._label.text.setPosition(containerBox.left + pad, containerBox.top + pad - sub * textBox.height);
-                window.draw(inputs[i]._label.text);
-                glDisable(GL_SCISSOR_TEST);
-                window.draw(inputs[i].scrollThumb);
-                if (inputs[i].hasFocus) {
-                    auto charSize = inputs[i]._label.text.findCharacterPos(inputs[i].cursor);
-                    inputs[i].cursorLine.setPosition(charSize.x, charSize.y);
-                    window.draw(inputs[i].cursorLine);
+
+                if (selecting) {
+                    if (selectedChars.y != -1) {
+                        for (int k = selectedChars.x; k < selectedChars.y; k++) {
+                            draw_char_selection(input, window, k);
+                        }
+                        for (int k = selectedChars.x - 1; k > selectedChars.y - 2; k--) {
+                            draw_char_selection(input, window, k);
+                        }
+                    }
                 }
+                input._label.text.setPosition(containerBox.left + pad, containerBox.top + pad - sub);
+                window.draw(input._label.text);
+                if (input.hasFocus) {
+                    auto charSize = input._label.text.findCharacterPos(input.cursor);
+                    input.cursorLine.setPosition(charSize.x, charSize.y);
+                    window.draw(input.cursorLine);
+                }
+                glDisable(GL_SCISSOR_TEST);
+                window.draw(input.scrollThumb);
             }
             window.display();
             shouldDraw = false;
