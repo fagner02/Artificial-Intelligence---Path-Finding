@@ -149,6 +149,7 @@ void set_thumb_values(text_input& input, float pad, bool set_pos = false) {
     if (height < 10.0f) height = 10.0f;
     input.scrollThumb.setSize(sf::Vector2f(10.0f, height));
     if (set_pos) {
+        input._label.text.setString(input.value);
         auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
         input.scrollThumb.setPosition(containerBox.left + containerBox.width - scrollThumbBox.width + pad, containerBox.top + pad);
     }
@@ -439,8 +440,13 @@ int main() {
                                 for (int j = 0; j < input.value.size(); j++) {
                                     auto pos = input._label.text.findCharacterPos(j);
                                     if (pos.x < mousePos.x && pos.y < mousePos.y) {
-                                        input.cursor = j + 1;
-                                        selectedChars.x = j + 1;
+                                        if (input.value[j] == '\n') {
+                                            selectedChars.x = j;
+                                            input.cursor = j;
+                                        } else {
+                                            selectedChars.x = j + 1;
+                                            input.cursor = j + 1;
+                                        }
                                         continue;
                                     }
                                     if (pos.x > mousePos.x && pos.y > mousePos.y) {
