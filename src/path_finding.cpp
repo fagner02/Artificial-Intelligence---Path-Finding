@@ -6,35 +6,38 @@ std::string generate_log(
     point target,
     int visited_qty,
     int generated_qty,
-    block blocks[space_size][space_size],
     std::string algorithm,
     int cost_id,
     int heuristic_id,
     float cost,
+    std::vector<node> path,
     std::vector<int> order = { 0, 1, 2, 3 }
 ) {
-    std::vector<point> path = {};
-
-    point _target = target;
-    while (target.x != -1 && target.y != -1) {
-        path.push_back(target);
-        target = blocks[target.x][target.y].info.from->pos;
-    }
     std::stringstream ss;
-    ss << algorithm << "," << visited_qty << "," << generated_qty << "," << path.size() << ",[";
-    for (auto p : path) {
-        ss << "[" << p.x << " " << p.y << "]";
+    ss << algorithm << "," << visited_qty << "," << generated_qty << "," << path.size() << ",";
+    if (path.size() == 0) {
+        ss << "null,";
+    } else {
+        for (auto p : path) {
+            ss << "[" << p.pos.x << " " << p.pos.y << "]";
+        }
+        ss << "],";
     }
-    ss << "], [" << start.x << " " << start.y << "], [" << _target.x << " " << _target.y
-        << "],";
-    ss << cost_id << "," << heuristic_id << ",";
-    ss << cost << ",\"[";
 
-    ss << order[0];
+    ss << "[" << start.x << " " << start.y << "], [" << target.x << " " << target.y << "],";
+    ss << cost_id << "," << heuristic_id << ",";
+
+    if (cost == -1) {
+        ss << "null,";
+    } else {
+        ss << cost << ",";
+    }
+
+    ss << "[" << order[0];
     for (int i = 1; i < 4; i++) {
         ss << " " << order[i];
     }
-    ss << "]\"";
+    ss << "]";
     return ss.str();
 }
 
@@ -105,11 +108,7 @@ std::string dfs(
 
                 if (animate) animate_path(*new_node, blocks, shouldDraw);
 
-                for (int i = 0; i < tree_nodes.size(); i++) {
-                    std::cout << "Deleting node\n";
-                    delete tree_nodes[i];
-                }
-                return "";
+                return generate_log(start, target, visited_qty, generated_qty, "dfs", cost_id, -1, new_node->data.cost, calculate_path(*new_node), order);
             }
             if (existent == tree_nodes.end()) {
                 tree_nodes.push_back(
@@ -137,7 +136,7 @@ std::string dfs(
 
     if (animate) animate_path(*tree_nodes[tree_nodes.size() - 1], blocks, shouldDraw);
 
-    return "null";
+    return generate_log(start, target, visited_qty, generated_qty, "dfs", cost_id, -1, -1, calculate_path(*tree_nodes[tree_nodes.size() - 1]), order);
 }
 
 void print_tree(node* root, int level = 0) {
@@ -206,8 +205,8 @@ std::string a_star(
             std::cout << "Found target\n";
             // print_tree(tree_nodes[0]);
             if (animate) animate_path(*current, blocks, shouldDraw);
-            return "";
-            // return generate_log(start, target, closed.size(), open.size(), blocks, "a_star", cost_id, heuristic_id, current->data.cost);
+            std::vector<node> path = calculate_a_star_path(*current);
+            return generate_log(start, target, closed.size(), open.size(), "a_star", cost_id, heuristic_id, current->data.cost, path);
         }
 
         for (int i = 0; i < 4; i++) {
@@ -290,7 +289,7 @@ std::string a_star(
         }
     }
     // print_tree(tree_nodes[0]);
-    return "null";
+    return generate_log(start, target, closed.size(), open.size(), "a_star", cost_id, heuristic_id, -1, {}, {});
 }
 
 std::string bfs(point start,
@@ -358,12 +357,10 @@ std::string bfs(point start,
                 new_node->data.from = current;
                 set_block_data(blocks, *new_node);
                 if (animate) animate_path(*new_node, blocks, shouldDraw);
-                return "";
-                // return generate_log(start, target, visited_qty, generated_qty, blocks, "bfs", cost_id, -1, new_node->data.cost, order);
+                return generate_log(start, target, visited_qty, generated_qty, "bfs", cost_id, -1, new_node->data.cost, calculate_path(*new_node), order);
             }
 
             if (existent == tree_nodes.end()) {
-                std::cout << "null\n";
                 tree_nodes.push_back(
                     new node{
                         visited_info{-1,-1,-1},
@@ -385,12 +382,10 @@ std::string bfs(point start,
                 set_block_data(blocks, *new_node);
 
                 if (animate)  set_block_colors(blocks, next, shouldDraw);
-            } else {
-                std::cout << "nao\n";
             }
         }
     }
-    return "null";
+    return generate_log(start, target, visited_qty, generated_qty, "bfs", cost_id, -1, -1, {}, order);
 }
 
 std::string dijkstra(point start,
@@ -434,7 +429,7 @@ std::string dijkstra(point start,
             std::cout << "Found target\n";
             if (animate) animate_path(*current, blocks, shouldDraw);
             return "";
-            // return generate_log(start, target, visited_qty, generated_qty, blocks, "dijkstra", cost_id, -1, current->data.cost);
+            return generate_log(start, target, visited_qty, generated_qty, "dijkstra", cost_id, -1, current->data.cost, calculate_path(*current));
         }
 
         for (int i = 0; i < 4; i++) {
@@ -476,7 +471,7 @@ std::string dijkstra(point start,
         }
     }
 
-    return "null";
+    return generate_log(start, target, visited_qty, generated_qty, "dijkstra", cost_id, -1, -1, {});
 }
 
 std::string greedy_search(
@@ -546,8 +541,8 @@ std::string greedy_search(
             }
 
             if (animate) animate_path(*current, blocks, shouldDraw);
-            return "";
-            // return generate_log(start, target, visited_qty, generated_qty, blocks, "greedy_search", cost_id, heuristic_id, current->data.cost);
+
+            return generate_log(start, target, visited_qty, generated_qty, "greedy_search", cost_id, heuristic_id, current->data.cost, calculate_path(*current));
         }
 
         for (int i = 0; i < 4; i++) {
@@ -586,5 +581,5 @@ std::string greedy_search(
         }
     }
 
-    return "null";
+    return generate_log(start, target, visited_qty, generated_qty, "greedy_search", cost_id, heuristic_id, -1, {});
 }
