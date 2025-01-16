@@ -71,7 +71,7 @@ auto create_label(
     std::string text
 ) {
 
-    label _label = {
+    label_data _label = {
         sf::Text(),
         sf::RoundedRectangleShape()
     };
@@ -102,7 +102,7 @@ auto create_textbox(
     sf::Vector2f size
 ) {
 
-    label _label = {
+    label_data _label = {
         sf::Text(),
         sf::RoundedRectangleShape()
     };
@@ -127,10 +127,10 @@ auto create_textbox(
 }
 
 struct text_input {
-    label _label;
+    label_data _label;
     std::string value;
     int cursor = 0;
-    sf::RectangleShape cursorLine = sf::RectangleShape(sf::Vector2f(1, 20));
+    sf::RectangleShape cursorLine = sf::RectangleShape(sf::Vector2f(2, 20));
     bool hasFocus = false;
     bool thumbPressed = false;
     sf::RoundedRectangleShape scrollThumb = sf::RoundedRectangleShape(sf::Vector2f(10, 10), 5, 20);
@@ -235,7 +235,7 @@ int main() {
     sf::Cursor arrowCursor;
     arrowCursor.loadFromSystem(sf::Cursor::Arrow);
 
-    std::vector<label> texts;
+    std::vector<label_data> texts;
     sf::Vector2f pos(10, 10);
     texts.push_back(create_label(font, pos, pad, "Dijkstra"));
     texts.push_back(create_label(font, pos, pad, "Bfs"));
@@ -250,8 +250,9 @@ int main() {
     set_thumb_values(inputs[0], pad, true);
 
     point start = { 0, 0 };
-    point target = { 0, 30 };
-    std::set<point> goals = { point{5, 15} };
+    point target = { 0, 15 };
+    std::set<point> goals = { point{0, 20}, point{2, 22} };
+
     std::vector<button> buttons = {
         {&texts[0], [&]() {
             auto a1 = std::thread([&]() {
@@ -283,7 +284,7 @@ int main() {
         }},
         {&texts[4],[&]() {
             auto a1 = std::thread([&]() {
-                fill_blocks(blocks);
+                fill_blocks(blocks, goals,  start, target);
                 std::cout << a_star(start, target, cost_all10, heuristic1, blocks, std::ref(shouldDraw), 0, 1, true, goals) << "\n";
             });
             a1.detach();

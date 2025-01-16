@@ -146,7 +146,7 @@ void print_tree(node* root, int level = 0) {
     }
 
     for (int i = 0; i < level; ++i) {
-        std::cout << "   ";
+        std::cout << "|   ";
     }
 
     std::cout << "Node: (" << root->pos.x << ", " << root->pos.y << ")\n";
@@ -204,8 +204,8 @@ std::string a_star(
 
         if (current->pos == target && current->data.found_goal) {
             std::cout << "Found target\n";
-            print_tree(tree_nodes[0]);
-            if (animate) calculate_path(*tree_nodes[0], *current, blocks, shouldDraw);
+            // print_tree(tree_nodes[0]);
+            if (animate) calculate_path(*current, blocks, shouldDraw);
             return "";
             //return generate_log(start, target, closed.size(), open.size(), blocks, "a_star", cost_id, heuristic_id, current->data.cost);
         }
@@ -216,17 +216,24 @@ std::string a_star(
                 continue;
             }
 
-            if (find_if(closed.begin(), closed.end(), [&](node* a) {return a->pos == next;}) != closed.end()) {
-                continue;
-            }
+            bool haveGoal = current->data.found_goal || goals.find(next) != goals.end();
 
+            auto closed_node = find_if(closed.begin(), closed.end(), [&](node* a) {return a->pos == next;});
+            if (closed_node != closed.end()) {
+                if (haveGoal && !(*closed_node)->data.found_goal) {
+                    open.push_back(*closed_node);
+                    closed.erase(closed_node);
+                } else {
+                    continue;
+                }
+            }
             visited_qty++;
             float new_cost = current->data.cost + cost(i, current->data.step + 1);
 
             auto found = find_if(
                 open.begin(),
                 open.end(),
-                [&](node* n) { return n->pos == next && n->data.found_goal; }
+                [&](node* n) { return n->pos == next && (!haveGoal || (haveGoal && n->data.found_goal));  }
             );
 
             node* next_node = nullptr;
@@ -234,30 +241,52 @@ std::string a_star(
             if (found == open.end()) {
                 tree_nodes.push_back(
                     new node{
-                        visited_info{-1,-1,-1, nullptr, current->data.found_goal || goals.find(next) != goals.end()},
+                        visited_info{-1,-1,-1, nullptr, haveGoal},
                         {},
                         current,
                         next
                     }
                 );
                 next_node = tree_nodes[tree_nodes.size() - 1];
-                current->children.push_back(next_node);
                 open.push_back(next_node);
                 generated_qty++;
+                current->children.push_back(next_node);
+                next_node->parent = current;
+                next_node->data.step = current->data.step + 1;
+                next_node->data.cost = new_cost;
+                next_node->data.heuristic = heuristic(next, target);
+                next_node->data.from = current;
+                next_node->data.found_goal = next_node->data.found_goal || haveGoal;
+                set_block_data(blocks, *next_node);
+                continue;
             } else {
                 next_node = *found;
             }
-
-            next_node->data.step = current->data.step + 1;
+            if (next_node->data.cost > new_cost && (next_node->data.found_goal || !haveGoal)) {
+                continue;
+            }
+            tree_nodes.push_back(
+                new node{
+                    visited_info{-1,-1,-1, nullptr, haveGoal},
+                    {},
+                    current,
+                    next
+                }
+            );
+            next_node = tree_nodes[tree_nodes.size() - 1];
+            current->children.push_back(next_node);
+            next_node->parent = current;
             next_node->data.cost = new_cost;
+            next_node->data.step = current->data.step + 1;
             next_node->data.heuristic = heuristic(next, target);
             next_node->data.from = current;
+            next_node->data.found_goal = next_node->data.found_goal || haveGoal;
             set_block_data(blocks, *next_node);
 
             if (animate) set_block_colors(blocks, next, shouldDraw);
         }
     }
-    print_tree(tree_nodes[0]);
+    // print_tree(tree_nodes[0]);
     return "null";
 }
 

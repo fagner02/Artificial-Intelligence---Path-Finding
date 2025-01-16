@@ -72,6 +72,20 @@ void calculate_path(node start, node target, block blocks[space_size][space_size
         target = *(target.data.from);
     }
 }
+void calculate_path(node target, block blocks[space_size][space_size], bool& shouldDraw) {
+    std::vector<node> path = {  };
+
+    while (true) {
+        blocks[target.pos.x][target.pos.y].info.cost = target.data.cost;
+        std::cout << target.pos.x << ", " << target.pos.y << ": " << target.data.cost << "\n";
+        path.push_back(target);
+        set_path_block_colors(blocks, path, shouldDraw);
+        if (target.parent == nullptr) {
+            break;
+        }
+        target = *target.parent;
+    }
+}
 
 void  set_block_colors(
     block blocks[space_size][space_size],
@@ -82,6 +96,12 @@ void  set_block_colors(
         for (int j = 0; j < space_size; j++) {
             if (i == next.x && j == next.y) {
                 blocks[i][j].shape.setFillColor(sf::Color(255, 0, 0));
+            } else if (blocks[i][j].info.label == "G") {
+                blocks[i][j].shape.setFillColor(sf::Color(0, 100, 0));
+            } else if (blocks[i][j].info.label == "S") {
+                blocks[i][j].shape.setFillColor(sf::Color(10, 10, 105));
+            } else if (blocks[i][j].info.label == "T") {
+                blocks[i][j].shape.setFillColor(sf::Color(230, 150, 15));
             } else if (blocks[i][j].info.cost != -1) {
                 blocks[i][j].shape.setFillColor(sf::Color(100, 200, 100));
             } else {
@@ -91,7 +111,7 @@ void  set_block_colors(
     }
     shouldDraw = true;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 }
 

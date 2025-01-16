@@ -2,6 +2,7 @@
 #include <rectshape.h>
 #include <functional>
 #include <constants.h>
+#include <set>
 
 #pragma once
 
@@ -27,6 +28,7 @@ struct visited_info {
     int step;
     node* from;
     bool found_goal = false;
+    std::string label = "";
 };
 
 struct block {
@@ -35,15 +37,15 @@ struct block {
     visited_info info;
 };
 
-void fill_blocks(block blocks[space_size][space_size]);
+void fill_blocks(block blocks[space_size][space_size], std::set<point> goals = {}, point start = { -1,-1 }, point target = { -1,-1 });
 
-struct label {
+struct label_data {
     sf::Text text;
     sf::RoundedRectangleShape box;
 };
 
 struct button {
-    label* _label;
+    label_data* _label;
     std::function<void()> fn;
     bool pressed = false;
 };
