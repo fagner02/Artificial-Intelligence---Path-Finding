@@ -103,7 +103,7 @@ void experiment4() {
 
     srand((unsigned)time(NULL));
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 20; i++) {
         point start = { rand() % 31, rand() % 31 };
         point target = { rand() % 31, rand() % 31 };
 
@@ -134,19 +134,23 @@ void experiment5() {
 
     srand((unsigned)time(NULL));
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 25; i++) {
         point start = { rand() % 31, rand() % 31 };
         point target = { rand() % 31, rand() % 31 };
 
         std::vector<int> order = { 0, 1, 2, 3 };
-        std::random_shuffle(order.begin(), order.end());
+
+        std::set<point> constraints = { };
+        while (constraints.size() < 4) {
+            constraints.insert({ rand() % 31, rand() % 31 });
+        }
+
         for (int j = 0; j < 4; j++) {
             auto cost = costs[j];
-
-            fill_blocks(blocks);
-            file4 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
-            fill_blocks(blocks);
-            file4 << dfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
+            for (int k = 0; k < 2;k++) {
+                fill_blocks(blocks);
+                file4 << a_star(start, target, cost, heuristic_fns[k], j, k, constraints, blocks, std::ref(shouldDraw)) << "\n";
+            }
         }
     }
 }
