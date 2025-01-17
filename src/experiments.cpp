@@ -119,6 +119,7 @@ void experiment4() {
         }
     }
 }
+
 void experiment5() {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
