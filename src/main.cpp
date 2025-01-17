@@ -246,11 +246,11 @@ int main() {
     // return 0;
 
 
-    // experiment1();
-    // experiment2();
-    // experiment3();
-    // experiment4();
-    // experiment5();
+    experiment1();
+    experiment2();
+    experiment3();
+    experiment4();
+    experiment5();
 
     bool focused = false;
     bool thumbPressed = false;

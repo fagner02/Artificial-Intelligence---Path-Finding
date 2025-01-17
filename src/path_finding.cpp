@@ -11,7 +11,8 @@ std::string generate_log(
     int heuristic_id,
     float cost,
     std::vector<node> path,
-    std::vector<int> order = { 0, 1, 2, 3 }
+    std::vector<int> order = { 0, 1, 2, 3 },
+    std::set<point> constraints
 ) {
     std::stringstream ss;
     ss << algorithm << "," << visited_qty << "," << generated_qty << "," << path.size() << ",";
@@ -36,6 +37,11 @@ std::string generate_log(
     ss << "[" << order[0];
     for (int i = 1; i < 4; i++) {
         ss << " " << order[i];
+    }
+    ss << "],";
+    ss << "[";
+    for (auto& p : constraints) {
+        ss << "[" << p.x << " " << p.y << "] ";
     }
     ss << "]";
     return ss.str();
@@ -221,7 +227,7 @@ std::string a_star(
             // print_tree(tree_nodes[0]);
             if (animate) animate_path(*current, blocks, shouldDraw);
             std::vector<node> path = calculate_a_star_path(*current);
-            return generate_log(start, target, visited.size(), open.size(), "a_star", cost_id, heuristic_id, current->data.cost, path);
+            return generate_log(start, target, visited.size(), open.size(), "a_star", cost_id, heuristic_id, current->data.cost, path, { 0,1,2,3 }, constraints);
         }
 
         for (int i = 0; i < 4; i++) {
@@ -279,7 +285,7 @@ std::string a_star(
         }
     }
     // print_tree(tree_nodes[0]);
-    return generate_log(start, target, visited.size(), open.size(), "a_star", cost_id, heuristic_id, -1, {}, {});
+    return generate_log(start, target, visited.size(), open.size(), "a_star", cost_id, heuristic_id, -1, {}, { 0,1,2,3 }, constraints);
 }
 
 std::string bfs(point start,

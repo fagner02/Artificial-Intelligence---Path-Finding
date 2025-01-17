@@ -20,7 +20,8 @@ std::string generate_log(
     int heuristic_id,
     float cost,
     std::vector<node> path,
-    std::vector<int> order
+    std::vector<int> order,
+    std::set<point> constraints = {}
 );
 
 std::string dfs(
