@@ -15,5 +15,5 @@ para cada entrada, em uma nova linha:
     para cada farmácia, em uma nova linha:
         2 inteiros separado por espaço representando a posição da farmácia
 
-Obs: Na main.cpp só tem a implementação da interface, no path_finding.cpp a implementação dos algoritmos de busca,
-no cost.cpp tem a implementação das funções de custo e no heuristics.cpp tem a implementação da heurísticas
+Obs: Na pasta include temos os arquivo .h que está sendo usado para declarar as funções, já na pasta src temos os arquivos .cpp
+com a implementação das funções determinadas no .h, na main.cpp só tem a implementação da interface.
