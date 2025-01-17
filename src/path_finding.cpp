@@ -107,7 +107,7 @@ std::string dfs(
 ) {
     int visited_qty = 0;
 
-    std::vector<node*> tree_nodes = { new node{{-1,-1,-1},{}, nullptr, start } };
+    std::vector<node*> tree_nodes = { };
 
     add_node(tree_nodes, nullptr, start, {}, 0, -1);
 
