@@ -122,8 +122,6 @@ auto create_textbox(
     auto textSize = label.text.getGlobalBounds();
     textSize.height *= 1;
 
-    auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height - 5 + pad * 2);
-
     label.box = sf::RoundedRectangleShape(size, 10, 20);
     label.box.setFillColor(sf::Color(100, 100, 100));
     label.box.setPosition(pos);
@@ -132,7 +130,7 @@ auto create_textbox(
 
     label.text.setPosition(sf::Vector2f(pos.x + pad - textSize.width / 2, pos.y + pad - textSize.height + 5));
 
-    pos.y += boxSize.y + 5;
+    pos.y += size.y + 5;
     return label;
 }
 
@@ -306,8 +304,12 @@ int main() {
     texts.push_back(create_label(font, pos, pad, "Experimento 5"));
 
     std::vector<text_input> inputs = {
-        {create_textbox(font, pos, pad, { 300, 40 }), "", "Nome do arquivo de saida", false}
+        {create_textbox(font, pos, pad, { 300, 40 }), "", "Nome do arquivo de entrada", false},
+        {create_textbox(font, pos, pad, { 300, 40 }), "", "Nome do arquivo de saida", false},
     };
+
+    set_thumb_values(inputs[0], pad, true);
+    set_thumb_values(inputs[1], pad, true);
 
     texts.push_back(create_label(font, pos, pad, "utilizar input.txt", 20, sf::Color::White, sf::Color::White,
         sf::Color::White, sf::Color::White, 5, 0));
@@ -318,9 +320,9 @@ int main() {
 
     auto toastElem = &texts[12];
     toastElem->visible = false;
-    std::string toastText = "";
+    std::wstring toastText = L"";
 
-    auto setToastText = [&](std::string text) {
+    auto setToastText = [&](std::wstring text) {
         std::thread(
             [&toastText, text, &toastElem, &shouldDraw]() {
                 toastElem->visible = true;
@@ -337,7 +339,7 @@ int main() {
                     shouldDraw = true;
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
-                toastText = "";
+                toastText = L"";
                 toastElem->visible = false;
                 color.a = 255;
                 textColor.a = 255;
@@ -350,7 +352,6 @@ int main() {
     texts[10].visible = false;
     texts[11].visible = false;
 
-    set_thumb_values(inputs[0], pad, true);
 
     point start = { 0, 0 };
     point target = { 0, 15 };
@@ -638,14 +639,17 @@ int main() {
                             buttons[i]._label->box.setFillColor(sf::Color(100, 100, 100));
                         }
                     }
+                    bool anyInputFocused = false;
                     for (auto& input : inputs) {
                         if (input.label.box.getGlobalBounds().contains(mousePos.x, mousePos.y) &&
                             !input.scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)
                             ) {
+                            anyInputFocused = true;
                             window.setMouseCursor(textCursor);
-                        } else {
-                            window.setMouseCursor(arrowCursor);
                         }
+                    }
+                    if (!anyInputFocused) {
+                        window.setMouseCursor(arrowCursor);
                     }
                 }
             }
@@ -896,7 +900,7 @@ int main() {
                 texts[11].visible = true;
                 sf::Text instructions;
                 instructions.setFont(font);
-                instructions.setString("Use as setas para mover o mapa\nUse + e - para aumentar e diminuir o zoom");
+                instructions.setString(L"Digite o nome dos arquivo ao lado.\nCaso não digite nada a predefinição é\nInput.txt e out.csv");
                 instructions.setCharacterSize(20);
                 instructions.setFillColor(sf::Color(10, 10, 10));
                 instructions.setOutlineColor(sf::Color(255, 255, 255));
@@ -910,7 +914,6 @@ int main() {
                 update_label_pos(texts[11], sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
             }
             if (toastElem->visible) {
-                std::cout << toastText << "\n";
                 toastElem->text.setString(toastText);
                 auto textSize = toastElem->text.getGlobalBounds();
                 toastElem->box.setSize(sf::Vector2f(textSize.width + pad * 2.0, textSize.height - 5.0 + pad * 2.0));

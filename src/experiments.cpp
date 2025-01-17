@@ -32,10 +32,10 @@ void experiment1() {
 void experiment1(
     std::vector<point> start_points,
     std::vector<point> target_points,
-    std::function<void(std::string)> toastText
+    std::function<void(std::wstring)> toastText
 ) {
     if (start_points.size() != 50 || target_points.size() != 50) {
-        toastText("start_points e target_points devem ter 50 elementos\n");
+        toastText(L"A entrada do experimento 1 deve ter 50 instâncias\n");
         return;
     }
     block blocks[space_size][space_size];
@@ -43,7 +43,7 @@ void experiment1(
     fill_blocks(blocks);
     std::ofstream file("log1.csv");
     if (!file.is_open()) {
-        toastText("Erro ao abrir o arquivo log.csv\n");
+        toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
     file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
@@ -95,10 +95,10 @@ void experiment2() {
 void experiment2(
     std::vector<point> start_points,
     std::vector<point> target_points,
-    std::function<void(std::string)> toastText
+    std::function<void(std::wstring)> toastText
 ) {
     if (start_points.size() != 50 || target_points.size() != 50) {
-        toastText("start_points e target_points devem ter 50 elementos\n");
+        toastText(L"A entrada do experimento 2 deve ter 50 instâncias\n");
         return;
     }
     block blocks[space_size][space_size];
@@ -106,7 +106,7 @@ void experiment2(
     fill_blocks(blocks);
     std::ofstream file1("log2.csv");
     if (!file1.is_open()) {
-        toastText("Erro ao abrir o arquivo log.csv\n");
+        toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
     file1 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
@@ -162,10 +162,10 @@ void experiment3() {
 void experiment3(
     std::vector<point> start_points,
     std::vector<point> target_points,
-    std::function<void(std::string)> toastText
+    std::function<void(std::wstring)> toastText
 ) {
     if (start_points.size() != 50 || target_points.size() != 50) {
-        toastText("start_points e target_points devem ter 50 elementos\n");
+        toastText(L"A entrada do experimento 3 deve ter 50 instâncias\n");
         return;
     }
     block blocks[space_size][space_size];
@@ -173,7 +173,7 @@ void experiment3(
     fill_blocks(blocks);
     std::ofstream file2("log3.csv");
     if (!file2.is_open()) {
-        toastText("Erro ao abrir o arquivo log.csv\n");
+        toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
 
@@ -233,10 +233,10 @@ void experiment4(
     std::vector<point> start_points,
     std::vector<point> target_points,
     std::vector<std::vector<int>> orders,
-    std::function<void(std::string)> toastText
+    std::function<void(std::wstring)> toastText
 ) {
     if (start_points.size() != 20 || target_points.size() != 20 || orders.size() != 20) {
-        toastText("start_points, target_points e orders devem ter 20 elementos\n");
+        toastText(L"A entrada do experimento 4 deve ter 20 instâncias\n");
         return;
     }
     block blocks[space_size][space_size];
@@ -244,7 +244,7 @@ void experiment4(
     fill_blocks(blocks);
     std::ofstream file3("log4.csv");
     if (!file3.is_open()) {
-        toastText("Erro ao abrir o arquivo log.csv\n");
+        toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
 
@@ -306,10 +306,10 @@ void experiment5(
     std::vector<point> target_points,
     std::vector<std::vector<int>> orders,
     std::vector<std::set<point>> constraints,
-    std::function<void(std::string)> toastText
+    std::function<void(std::wstring)> toastText
 ) {
     if (start_points.size() != 25 || target_points.size() != 25 || orders.size() != 25 || constraints.size() != 25) {
-        toastText("start_points, target_points, orders e constraints devem ter 25 elementos\n");
+        toastText(L"A entrada do experimento 5 deve ter 25 instâncias\n");
         return;
     }
     block blocks[space_size][space_size];
@@ -317,7 +317,7 @@ void experiment5(
     fill_blocks(blocks);
     std::ofstream file4("log5.csv");
     if (!file4.is_open()) {
-        toastText("Erro ao abrir o arquivo log.csv\n");
+        toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
 
