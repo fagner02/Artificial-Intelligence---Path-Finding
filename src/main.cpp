@@ -146,6 +146,8 @@ void update_label_pos(label_data& label, sf::Vector2f pos) {
 struct text_input {
     label_data _label;
     std::string value;
+    std::string tooltip = "";
+    bool isMultiline = false;
     int cursor = 0;
     sf::RectangleShape cursorLine = sf::RectangleShape(sf::Vector2f(2, 20));
     bool hasFocus = false;
@@ -294,6 +296,11 @@ int main() {
     texts.push_back(create_label(font, pos, pad, "Experimento 3"));
     texts.push_back(create_label(font, pos, pad, "Experimento 4"));
     texts.push_back(create_label(font, pos, pad, "Experimento 5"));
+
+    std::vector<text_input> inputs = {
+        {create_textbox(font, pos, pad, { 300, 40 }), "", "Nome do arquivo de saida", false}
+    };
+
     texts.push_back(create_label(font, pos, pad, "utilizar input.txt", 20, sf::Color::White, sf::Color::White,
         sf::Color::White, sf::Color::White, 5, 0));
     texts.push_back(create_label(font, pos, pad, "utilizar entrada aleatoria", 20, sf::Color::White, sf::Color::White,
@@ -302,9 +309,6 @@ int main() {
     texts[10].visible = false;
     texts[11].visible = false;
 
-    std::vector<text_input> inputs = {
-        {create_textbox(font, pos, pad, { 200, 60 }), "a\nb"}
-    };
 
     set_thumb_values(inputs[0], pad, true);
 
@@ -316,107 +320,233 @@ int main() {
         {&texts[0], [&]() {
             selectingAlgorithm = true;
             selectedAlgorithm = 0;
-            texts[10].visible = true;
-            texts[11].visible = true;
          }},
         {&texts[1],[&]() {
-            auto a1 = std::thread([&]() {
-                fill_blocks(blocks);
-                std::cout << bfs(start, target, cost_all10, blocks, std::ref(shouldDraw), 0, {0,1,2,3}, true) << "\n";
-            });
-            a1.detach();
+            selectingAlgorithm = true;
+            selectedAlgorithm = 1;
         } },
         {&texts[2],[&]() {
-            auto a1 = std::thread([&]() {
-                fill_blocks(blocks);
-                std::cout << dfs(start, target, cost_all10, blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
-            });
-            a1.detach();
+           selectingAlgorithm = true;
+            selectedAlgorithm = 2;
         }},
         {&texts[3],[&]() {
-            auto a1 = std::thread([&]() {
-                fill_blocks(blocks);
-                std::cout << greedy_search(start, target, cost_all10, heuristic1, 0, 1, constraints, blocks, std::ref(shouldDraw), true) << "\n";
-            });
-            a1.detach();
+            selectingAlgorithm = true;
+            selectedAlgorithm = 3;
         }},
         {&texts[4],[&]() {
-            auto a1 = std::thread([&]() {
-                fill_blocks(blocks, constraints,  start, target);
-                std::cout << a_star(start, target, cost_all10, heuristic1, 0, 1, constraints, blocks, std::ref(shouldDraw), true) << "\n";
-            });
-            a1.detach();
+            selectingAlgorithm = true;
+            selectedAlgorithm = 4;
         }},
         {&texts[5],[&]() {
             selectingExperiment = true;
             selectedExperiment = 0;
-            texts[10].visible = true;
-            texts[11].visible = true;
-            // auto a1 = std::thread(
-            //     [&]() {
-            //         loading = true;
-            //         experiment1();
-            //         loading = false;
-            //     }
-            // );
-            // a1.detach();
+        }},
+        {&texts[6],[&]() {
+            selectingExperiment = true;
+            selectedExperiment = 1;
+        }},
+        {&texts[7],[&]() {
+            selectingExperiment = true;
+            selectedExperiment = 2;
+        }},
+        {&texts[8],[&]() {
+            selectingExperiment = true;
+            selectedExperiment = 3;
+        }},
+        {&texts[9],[&]() {
+            selectingExperiment = true;
+            selectedExperiment = 4;
         }},
         {&texts[10], [&]() {
+            texts[10].visible = false;
+            texts[11].visible = false;
+
+            std::vector<point> start_points;
+            std::vector<point> target_points;
+            std::vector<int> cost_ids;
+            std::vector<int> heuristic_ids;
+            std::vector<std::vector<int>> orders;
+            std::vector<std::set<point>> constraints;
+            std::ifstream file("input.txt");
+            int count;
+            file >> count;
+            std::cout << count << "\n";
+            for (int i = 0;i < count;i++) {
+                start_points.push_back(point());
+                target_points.push_back(point());
+                cost_ids.push_back(0);
+                heuristic_ids.push_back(0);
+                orders.push_back(std::vector<int>());
+                constraints.push_back(std::set<point>());
+                file >> start_points[i].x >> start_points[i].y;
+                file >> target_points[i].x >> target_points[i].y;
+                file >> cost_ids[i];
+                file >> heuristic_ids[i];
+                for (int j = 0;j < 4;j++) {
+                    int k;
+                    file >> k;
+                    orders[i].push_back(k);
+                }
+                int goal_count;
+                file >> goal_count;
+                for (int j = 0;j < goal_count;j++) {
+                    point p;
+                    file >> p.x >> p.y;
+                    constraints[i].insert(p);
+                }
+                file.close();
+            }
             if (selectingAlgorithm) {
-                std::ifstream file("input.txt");
-                int count;
-                file >> count;
-                std::cout << count << "\n";
-                for (int i = 0;i < count;i++) {
-                    point _start;
-                    point _target;
-                    int _cost_id;
-                    int _heuristic_id;
-                    std::vector<int> _order;
-                    std::set<point> _constraints;
-                    file >> _start.x >> _start.y;
-                    file >> _target.x >> _target.y;
-                    std::cout << _start.x << " " << _start.y << "\n";
-                    std::cout << _target.x << " " << _target.y << "\n";
-                    file >> _cost_id;
-                    file >> _heuristic_id;
-                    std::cout << _cost_id << " " << _heuristic_id << "\n";
-                    for (int j = 0;j < 4;j++) {
-                        int k;
-                        file >> k;
-                        std::cout << k << " ";
-                        _order.push_back(k);
-                    }
-                    std::cout << "\n";
-                    int goal_count;
-                    file >> goal_count;
-                    for (int j = 0;j < goal_count;j++) {
-                        point p;
-                        file >> p.x >> p.y;
-                        _constraints.insert(p);
-                    }
-                    file.close();
-                    auto a1 = std::thread(
-                        [_start, _target, &blocks, selectedAlgorithm, _cost_id, &shouldDraw]() {
-                            fill_blocks(blocks);
+                selectingAlgorithm = false;
+                selectingExperiment = false;
+
+                auto a1 = std::thread(
+                    [start_points, target_points, count, constraints, &blocks, selectedAlgorithm, cost_ids, &shouldDraw]() {
+                        for (int i = 0; i < count;i++) {
+                            fill_blocks(blocks, constraints[i], start_points[i], target_points[i]);
                             switch (selectedAlgorithm) {
+                                case 0: {
+                                    std::cout << dijkstra(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, true) << "\n";
+                                    break;
+                                }
+                                case 1: {
+                                    std::cout << bfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                                    break;
+                                }
+                                case 2: {
+                                    std::cout << dfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                                    break;
+                                }
+                                case 3: {
+                                    std::cout << greedy_search(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[0], cost_ids[i], 0, constraints[i], blocks, std::ref(shouldDraw), true) << "\n";
+                                    break;
+                                }
+                                case 4: {
+                                    std::cout << a_star(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[0], cost_ids[i], 0, constraints[i], blocks, std::ref(shouldDraw), true) << "\n";
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                );
+                a1.detach();
+            }
+            if (selectingExperiment) {
+                selectingAlgorithm = false;
+                selectingExperiment = false;
+                auto a1 = std::thread(
+                    [&]() {
+                        switch (selectedExperiment) {
                             case 0: {
-                                std::cout << _target.x << " " << _target.y << "\n";
-                                std::cout << dijkstra(_start, _target, costs[_cost_id], blocks, std::ref(shouldDraw), 0, true) << "\n";
+                                experiment1(start_points, target_points);
+                                break;
+                            }
+                            case 1: {
+                                experiment2(start_points, target_points);
+                                break;
+                            }
+                            case 2: {
+                                experiment3(start_points, target_points);
+                                break;
+                            }
+                            case 3: {
+                                experiment4(start_points, target_points, orders);
+                                break;
+                            }
+                            case 4: {
+                                experiment5(start_points, target_points, orders, constraints);
                                 break;
                             }
                             default:
                                 break;
-                            }
                         }
-                    );
-                    a1.detach();
-                }
+                    }
+                );
+                a1.detach();
             }
-        }},
-        {&texts[11],[&]() {
-
-        }}
+        } },
+        { &texts[11],[&]() {
+            texts[10].visible = false;
+            texts[11].visible = false;
+            if (selectingAlgorithm) {
+                selectingAlgorithm = false;
+                selectingExperiment = false;
+                auto a1 = std::thread(
+                    [&blocks, &shouldDraw, selectedAlgorithm]() {
+                        srand((unsigned)time(NULL));
+                        point start = { rand() % 31, rand() % 31 };
+                        point target = { rand() % 31, rand() % 31 };
+                        std::set<point> constraints = {};
+                        while (constraints.size() < 4) {
+                            constraints.insert({ rand() % 31, rand() % 31 });
+                        }
+                        fill_blocks(blocks, constraints, start, target);
+                        switch (selectedAlgorithm) {
+                        case 0: {
+                            std::cout << dijkstra(start, target, costs[0], blocks, std::ref(shouldDraw), 0, true) << "\n";
+                            break;
+                        }
+                        case 1: {
+                            std::cout << bfs(start, target, costs[0], blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                            break;
+                        }
+                        case 2: {
+                            std::cout << dfs(start, target, costs[0], blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                            break;
+                        }
+                        case 3: {
+                            std::cout << greedy_search(start, target, costs[0], heuristic_fns[0], 0, 0, constraints, blocks, std::ref(shouldDraw), true) << "\n";
+                            break;
+                        }
+                        case 4: {
+                            std::cout << a_star(start, target, costs[0], heuristic_fns[0], 0, 0, constraints, blocks, std::ref(shouldDraw), true) << "\n";
+                            break;
+                        }
+                        default:
+                            break;
+                        }
+                    }
+                );
+                a1.detach();
+            }
+            if (selectingExperiment) {
+                selectingAlgorithm = false;
+                selectingExperiment = false;
+                auto a1 = std::thread(
+                    [&blocks, &shouldDraw, &selectedExperiment, &loading]() {
+                        loading = true;
+                        switch (selectedExperiment) {
+                            case 0: {
+                                experiment1();
+                                break;
+                            }
+                            case 1: {
+                                experiment2();
+                                break;
+                            }
+                            case 2: {
+                                experiment3();
+                                break;
+                            }
+                            case 3: {
+                                experiment4();
+                                break;
+                            }
+                            case 4: {
+                                experiment5();
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        loading = false;
+                    }
+                );
+                a1.detach();
+            }
+        } }
     };
     sf::Vector2f scale = { 0.5,0.5 };
     sf::Vector2f translate = { size.x * scale.x,size.y * scale.y };
@@ -439,8 +569,10 @@ int main() {
                 for (auto& input : inputs) {
                     if (input.hasFocus) {
                         if (event.text.unicode == 13) {
-                            input.value.insert(input.value.begin() + input.cursor, '\n');
-                            input.cursor++;
+                            if (input.isMultiline) {
+                                input.value.insert(input.value.begin() + input.cursor, '\n');
+                                input.cursor++;
+                            }
                         } else if (event.text.unicode == 8) {
                             if (selecting) {
                                 if (selectedChars.y > selectedChars.x) {
@@ -694,21 +826,24 @@ int main() {
 
         if (shouldDraw) {
             draw(size, window, containerSize, blockSize, blocks, scale, translate);
-            sf::Text instructions;
-            instructions.setFont(font);
-            instructions.setString("Use as setas para mover o mapa\nUse + e - para aumentar e diminuir o zoom");
-            instructions.setCharacterSize(20);
-            instructions.setFillColor(sf::Color(10, 10, 10));
-            instructions.setOutlineColor(sf::Color(255, 255, 255));
-            instructions.setOutlineThickness(5);
-            auto instructionsSize = instructions.getGlobalBounds();
-            instructions.setPosition(size.x / 2.0 - instructionsSize.width / 2.0, size.y / 2.0 - instructionsSize.height - 10);
-            instructionsSize = instructions.getGlobalBounds();
-            window.draw(instructions);
-            update_label_pos(texts[10], sf::Vector2f(instructions.getPosition().x, instructionsSize.top + instructionsSize.height + 10));
-            auto textBox = texts[10].box.getGlobalBounds();
-            update_label_pos(texts[11], sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
-
+            if (selectingAlgorithm || selectingExperiment) {
+                texts[10].visible = true;
+                texts[11].visible = true;
+                sf::Text instructions;
+                instructions.setFont(font);
+                instructions.setString("Use as setas para mover o mapa\nUse + e - para aumentar e diminuir o zoom");
+                instructions.setCharacterSize(20);
+                instructions.setFillColor(sf::Color(10, 10, 10));
+                instructions.setOutlineColor(sf::Color(255, 255, 255));
+                instructions.setOutlineThickness(5);
+                auto instructionsSize = instructions.getGlobalBounds();
+                instructions.setPosition(size.x / 2.0 - instructionsSize.width / 2.0, size.y / 2.0 - instructionsSize.height - 10);
+                instructionsSize = instructions.getGlobalBounds();
+                window.draw(instructions);
+                update_label_pos(texts[10], sf::Vector2f(instructions.getPosition().x, instructionsSize.top + instructionsSize.height + 10));
+                auto textBox = texts[10].box.getGlobalBounds();
+                update_label_pos(texts[11], sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
+            }
             for (int i = 0; i < texts.size();i++) {
                 if (texts[i].visible) {
                     window.draw(texts[i].box);
@@ -744,7 +879,14 @@ int main() {
                     }
                 }
                 input._label.text.setPosition(containerBox.left + pad, containerBox.top + pad - sub);
-                window.draw(input._label.text);
+                if (input.value.size() == 0) {
+                    input._label.text.setString(input.tooltip);
+                    input._label.text.setFillColor(sf::Color(150, 150, 150));
+                    window.draw(input._label.text);
+                    input._label.text.setFillColor(sf::Color(255, 255, 255));
+                } else {
+                    window.draw(input._label.text);
+                }
                 if (input.hasFocus) {
                     auto charSize = input._label.text.findCharacterPos(input.cursor);
                     input.cursorLine.setPosition(charSize.x, charSize.y);

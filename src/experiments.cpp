@@ -29,11 +29,14 @@ void experiment1() {
     }
 }
 
-
 void experiment1(
     std::vector<point> start_points,
     std::vector<point> target_points
 ) {
+    if (start_points.size() != 50 || target_points.size() != 50) {
+        std::cout << "start_points e target_points devem ter 50 elementos\n";
+        return;
+    }
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
@@ -43,7 +46,6 @@ void experiment1(
         return;
     }
     file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
-
     for (int i = 0; i < 50; i++) {
         point start = start_points[i];
         point target = target_points[i];
@@ -93,6 +95,10 @@ void experiment2(
     std::vector<point> start_points,
     std::vector<point> target_points
 ) {
+    if (start_points.size() != 50 || target_points.size() != 50) {
+        std::cout << "start_points e target_points devem ter 50 elementos\n";
+        return;
+    }
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
@@ -155,6 +161,10 @@ void experiment3(
     std::vector<point> start_points,
     std::vector<point> target_points
 ) {
+    if (start_points.size() != 50 || target_points.size() != 50) {
+        std::cout << "start_points e target_points devem ter 50 elementos\n";
+        return;
+    }
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
@@ -221,6 +231,10 @@ void experiment4(
     std::vector<point> target_points,
     std::vector<std::vector<int>> orders
 ) {
+    if (start_points.size() != 20 || target_points.size() != 20 || orders.size() != 20) {
+        std::cout << "start_points, target_points e orders devem ter 20 elementos\n";
+        return;
+    }
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
@@ -289,6 +303,10 @@ void experiment5(
     std::vector<std::vector<int>> orders,
     std::vector<std::set<point>> constraints
 ) {
+    if (start_points.size() != 25 || target_points.size() != 25 || orders.size() != 25 || constraints.size() != 25) {
+        std::cout << "start_points, target_points, orders e constraints devem ter 25 elementos\n";
+        return;
+    }
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);

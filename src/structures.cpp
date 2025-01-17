@@ -31,6 +31,7 @@ void fill_blocks(
             blocks[i][j].info.cost = -1;
             blocks[i][j].info.heuristic = -1;
             blocks[i][j].info.from = nullptr;
+            blocks[i][j].info.label = "";
             if (constraints.find(point{ i, j }) != constraints.end()) {
                 blocks[i][j].info.label = "G";
             }
