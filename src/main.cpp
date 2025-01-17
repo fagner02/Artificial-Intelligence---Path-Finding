@@ -68,7 +68,14 @@ auto create_label(
     sf::Font& font,
     sf::Vector2f& pos,
     float pad,
-    std::string text
+    std::string text,
+    int charSize = 18,
+    sf::Color outColor = sf::Color(255, 255, 255),
+    sf::Color textColor = sf::Color(255, 255, 255),
+    sf::Color boxColor = sf::Color(100, 100, 100),
+    sf::Color textOutColor = sf::Color(255, 255, 255),
+    int outlineThickness = 2,
+    int textOutlineThickness = 0
 ) {
 
     label_data _label = {
@@ -78,19 +85,21 @@ auto create_label(
     _label.text = (sf::Text());
     _label.text.setFont(font);
     _label.text.setString(text);
-    _label.text.setCharacterSize(18);
+    _label.text.setCharacterSize(charSize);
+    _label.text.setFillColor(textColor);
+    _label.text.setOutlineColor(textOutColor);
+    _label.text.setOutlineThickness(textOutlineThickness);
     auto textSize = _label.text.getGlobalBounds();
-    textSize.height *= 1;
 
-    auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height - 5 + pad * 2);
+    auto boxSize = sf::Vector2f(textSize.width + pad * 2.0, textSize.height - 5.0 + pad * 2.0);
 
     _label.box = sf::RoundedRectangleShape(boxSize, 10, 20);
-    _label.box.setFillColor(sf::Color(100, 100, 100));
+    _label.box.setFillColor(boxColor);
     _label.box.setPosition(pos);
-    _label.box.setOutlineColor(sf::Color(255, 255, 255));
-    _label.box.setOutlineThickness(2);
+    _label.box.setOutlineColor(outColor);
+    _label.box.setOutlineThickness(outlineThickness);
 
-    _label.text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2 - textSize.width / 2, pos.y + boxSize.y / 2.0 - textSize.height + 5));
+    _label.text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2.0 - textSize.width / 2.0, pos.y + boxSize.y / 2.0 - textSize.height + 5.0));
     pos.y += boxSize.y + 5;
     return _label;
 }
@@ -99,7 +108,8 @@ auto create_textbox(
     sf::Font& font,
     sf::Vector2f& pos,
     float pad,
-    sf::Vector2f size
+    sf::Vector2f size,
+    int charSize = 18
 ) {
 
     label_data _label = {
@@ -108,7 +118,7 @@ auto create_textbox(
     };
     _label.text = (sf::Text());
     _label.text.setFont(font);
-    _label.text.setCharacterSize(18);
+    _label.text.setCharacterSize(charSize);
     auto textSize = _label.text.getGlobalBounds();
     textSize.height *= 1;
 
@@ -124,6 +134,13 @@ auto create_textbox(
 
     pos.y += boxSize.y + 5;
     return _label;
+}
+
+void update_label_pos(label_data& label, sf::Vector2f pos) {
+    label.box.setPosition(pos);
+    auto textSize = label.text.getGlobalBounds();
+    label.text.setPosition(sf::Vector2f(pos.x + label.box.getSize().x / 2 - textSize.width / 2, pos.y + label.box.getSize().y / 2.0 - textSize.height + 5));
+
 }
 
 struct text_input {
@@ -245,17 +262,15 @@ int main() {
 
     // return 0;
 
-
-    experiment1();
-    experiment2();
-    experiment3();
-    experiment4();
-    experiment5();
-
     bool focused = false;
     bool thumbPressed = false;
     bool charPressed = false;
     bool selecting = false;
+    bool loading = false;
+    bool selectingExperiment = false;
+    bool selectingAlgorithm = false;
+    int selectedAlgorithm = -1;
+    int selectedExperiment = -1;
     sf::Vector2f selectedChars;
 
     sf::Vector2f lastCharPos;
@@ -274,6 +289,18 @@ int main() {
     texts.push_back(create_label(font, pos, pad, "Dfs"));
     texts.push_back(create_label(font, pos, pad, "Greedy"));
     texts.push_back(create_label(font, pos, pad, "A*"));
+    texts.push_back(create_label(font, pos, pad, "Experimento 1"));
+    texts.push_back(create_label(font, pos, pad, "Experimento 2"));
+    texts.push_back(create_label(font, pos, pad, "Experimento 3"));
+    texts.push_back(create_label(font, pos, pad, "Experimento 4"));
+    texts.push_back(create_label(font, pos, pad, "Experimento 5"));
+    texts.push_back(create_label(font, pos, pad, "utilizar input.txt", 20, sf::Color::White, sf::Color::White,
+        sf::Color::White, sf::Color::White, 5, 0));
+    texts.push_back(create_label(font, pos, pad, "utilizar entrada aleatoria", 20, sf::Color::White, sf::Color::White,
+        sf::Color::White, sf::Color::White, 5, 0));
+
+    texts[10].visible = false;
+    texts[11].visible = false;
 
     std::vector<text_input> inputs = {
         {create_textbox(font, pos, pad, { 200, 60 }), "a\nb"}
@@ -287,11 +314,10 @@ int main() {
 
     std::vector<button> buttons = {
         {&texts[0], [&]() {
-            auto a1 = std::thread([&]() {
-                fill_blocks(blocks);
-                std::cout << dijkstra(start, target, cost_all10, blocks, std::ref(shouldDraw), 0, true) << "\n";
-            });
-            a1.detach();
+            selectingAlgorithm = true;
+            selectedAlgorithm = 0;
+            texts[10].visible = true;
+            texts[11].visible = true;
          }},
         {&texts[1],[&]() {
             auto a1 = std::thread([&]() {
@@ -320,6 +346,76 @@ int main() {
                 std::cout << a_star(start, target, cost_all10, heuristic1, 0, 1, constraints, blocks, std::ref(shouldDraw), true) << "\n";
             });
             a1.detach();
+        }},
+        {&texts[5],[&]() {
+            selectingExperiment = true;
+            selectedExperiment = 0;
+            texts[10].visible = true;
+            texts[11].visible = true;
+            // auto a1 = std::thread(
+            //     [&]() {
+            //         loading = true;
+            //         experiment1();
+            //         loading = false;
+            //     }
+            // );
+            // a1.detach();
+        }},
+        {&texts[10], [&]() {
+            if (selectingAlgorithm) {
+                std::ifstream file("input.txt");
+                int count;
+                file >> count;
+                std::cout << count << "\n";
+                for (int i = 0;i < count;i++) {
+                    point _start;
+                    point _target;
+                    int _cost_id;
+                    int _heuristic_id;
+                    std::vector<int> _order;
+                    std::set<point> _constraints;
+                    file >> _start.x >> _start.y;
+                    file >> _target.x >> _target.y;
+                    std::cout << _start.x << " " << _start.y << "\n";
+                    std::cout << _target.x << " " << _target.y << "\n";
+                    file >> _cost_id;
+                    file >> _heuristic_id;
+                    std::cout << _cost_id << " " << _heuristic_id << "\n";
+                    for (int j = 0;j < 4;j++) {
+                        int k;
+                        file >> k;
+                        std::cout << k << " ";
+                        _order.push_back(k);
+                    }
+                    std::cout << "\n";
+                    int goal_count;
+                    file >> goal_count;
+                    for (int j = 0;j < goal_count;j++) {
+                        point p;
+                        file >> p.x >> p.y;
+                        _constraints.insert(p);
+                    }
+                    file.close();
+                    auto a1 = std::thread(
+                        [_start, _target, &blocks, selectedAlgorithm, _cost_id, &shouldDraw]() {
+                            fill_blocks(blocks);
+                            switch (selectedAlgorithm) {
+                            case 0: {
+                                std::cout << _target.x << " " << _target.y << "\n";
+                                std::cout << dijkstra(_start, _target, costs[_cost_id], blocks, std::ref(shouldDraw), 0, true) << "\n";
+                                break;
+                            }
+                            default:
+                                break;
+                            }
+                        }
+                    );
+                    a1.detach();
+                }
+            }
+        }},
+        {&texts[11],[&]() {
+
         }}
     };
     sf::Vector2f scale = { 0.5,0.5 };
@@ -372,7 +468,7 @@ int main() {
                     }
                 }
             }
-            if (event.type == sf::Event::MouseMoved) {
+            if (event.type == sf::Event::MouseMoved && !loading) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 if (thumbPressed) {
                     for (auto& input : inputs) {
@@ -418,7 +514,7 @@ int main() {
                     }
                 }
             }
-            if (event.type == sf::Event::MouseButtonPressed) {
+            if (event.type == sf::Event::MouseButtonPressed && !loading) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     for (int i = 0; i < buttons.size(); i++) {
@@ -466,7 +562,7 @@ int main() {
                     }
                 }
             }
-            if (event.type == sf::Event::MouseButtonReleased) {
+            if (event.type == sf::Event::MouseButtonReleased && !loading) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     if (thumbPressed) {
@@ -493,8 +589,7 @@ int main() {
                     }
                 }
             }
-
-            if (event.type == sf::Event::KeyPressed) {
+            if (event.type == sf::Event::KeyPressed && !loading) {
                 if (focused) {
                     if (event.key.code == sf::Keyboard::Left) {
                         for (auto& input : inputs) {
@@ -599,11 +694,26 @@ int main() {
 
         if (shouldDraw) {
             draw(size, window, containerSize, blockSize, blocks, scale, translate);
+            sf::Text instructions;
+            instructions.setFont(font);
+            instructions.setString("Use as setas para mover o mapa\nUse + e - para aumentar e diminuir o zoom");
+            instructions.setCharacterSize(20);
+            instructions.setFillColor(sf::Color(10, 10, 10));
+            instructions.setOutlineColor(sf::Color(255, 255, 255));
+            instructions.setOutlineThickness(5);
+            auto instructionsSize = instructions.getGlobalBounds();
+            instructions.setPosition(size.x / 2.0 - instructionsSize.width / 2.0, size.y / 2.0 - instructionsSize.height - 10);
+            instructionsSize = instructions.getGlobalBounds();
+            window.draw(instructions);
+            update_label_pos(texts[10], sf::Vector2f(instructions.getPosition().x, instructionsSize.top + instructionsSize.height + 10));
+            auto textBox = texts[10].box.getGlobalBounds();
+            update_label_pos(texts[11], sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
 
             for (int i = 0; i < texts.size();i++) {
-                window.draw(texts[i].box);
-                window.draw(texts[i].text);
-                glDisable(GL_SCISSOR_TEST);
+                if (texts[i].visible) {
+                    window.draw(texts[i].box);
+                    window.draw(texts[i].text);
+                }
             }
             for (auto& input : inputs) {
                 window.draw(input._label.box);
@@ -642,6 +752,18 @@ int main() {
                 }
                 glDisable(GL_SCISSOR_TEST);
                 window.draw(input.scrollThumb);
+            }
+            if (loading) {
+                sf::Text loadingText;
+                loadingText.setFont(font);
+                loadingText.setString("Executando...");
+                loadingText.setCharacterSize(35);
+                loadingText.setFillColor(sf::Color(100, 100, 100));
+                loadingText.setOutlineColor(sf::Color(255, 255, 255));
+                loadingText.setOutlineThickness(5);
+                auto textSize = loadingText.getGlobalBounds();
+                loadingText.setPosition(size.x / 2.0 - textSize.width / 2.0, size.y / 2.0 - textSize.height / 2.0);
+                window.draw(loadingText);
             }
             window.display();
             shouldDraw = false;

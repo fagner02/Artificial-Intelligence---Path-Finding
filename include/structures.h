@@ -43,6 +43,7 @@ void fill_blocks(block blocks[space_size][space_size], std::set<point> constrain
 struct label_data {
     sf::Text text;
     sf::RoundedRectangleShape box;
+    bool visible = true;
 };
 
 struct button {

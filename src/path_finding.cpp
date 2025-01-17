@@ -19,6 +19,7 @@ std::string generate_log(
     if (path.size() == 0) {
         ss << "null,";
     } else {
+        ss << "[";
         for (auto p : path) {
             ss << "[" << p.pos.x << " " << p.pos.y << "]";
         }
