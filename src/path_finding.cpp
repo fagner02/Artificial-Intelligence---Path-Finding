@@ -476,7 +476,7 @@ std::string greedy_search(
     add_node(tree_nodes, nullptr, start, constraints, 0, heuristic(start, target));
     if (animate) set_block_data(blocks, *tree_nodes[0]);
 
-    std::vector<node*> visited;
+    std::vector<node*> visited{ tree_nodes[0] };
     std::vector<node*> open;
 
     int visited_qty = 0;
@@ -492,7 +492,6 @@ std::string greedy_search(
 
         node* current = *min_it;
         open.erase(min_it);
-        visited.push_back(current);
         visited_qty++;
 
         if (current->pos == target) {
@@ -526,6 +525,7 @@ std::string greedy_search(
             auto new_node = add_node(tree_nodes, current, next, constraints, 0, heuristic(next, target));
 
             open.push_back(new_node);
+            visited.push_back(new_node);
 
             if (animate) {
                 set_block_data(blocks, *new_node);
