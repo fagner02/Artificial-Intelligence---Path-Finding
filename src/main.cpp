@@ -212,6 +212,26 @@ void draw_char_selection(text_input& input, sf::RenderWindow& window, int k) {
     window.draw(rect);
 }
 
+void delete_selected(text_input& input, sf::Vector2f selectedChars) {
+    if (selectedChars.y > selectedChars.x) {
+        input.value.erase(input.value.begin() + selectedChars.x, input.value.begin() + selectedChars.y);
+        input.cursor = selectedChars.x;
+    } else {
+        input.value.erase(input.value.begin() + selectedChars.y - 1, input.value.begin() + selectedChars.x);
+        input.cursor = selectedChars.y - 1;
+        if (selectedChars.y - 1 > input.value.size()) {
+            input.cursor = input.value.size();
+        }
+    }
+}
+
+std::string get_select(text_input& input, sf::Vector2f selectedChars) {
+    if (selectedChars.x > selectedChars.y) {
+        return input.value.substr(selectedChars.y, selectedChars.x - selectedChars.y);
+    } else {
+        return input.value.substr(selectedChars.x, selectedChars.y - selectedChars.x);
+    }
+}
 
 int main() {
     std::cout << "Hello, World!\n";
@@ -565,43 +585,9 @@ int main() {
                 window.setView(view);
                 translate = { size.x * scale.x, size.y * scale.y };
             }
-            if (event.type == sf::Event::TextEntered) {
-                for (auto& input : inputs) {
-                    if (input.hasFocus) {
-                        if (event.text.unicode == 13) {
-                            if (input.isMultiline) {
-                                input.value.insert(input.value.begin() + input.cursor, '\n');
-                                input.cursor++;
-                            }
-                        } else if (event.text.unicode == 8) {
-                            if (selecting) {
-                                if (selectedChars.y > selectedChars.x) {
-                                    input.value.erase(input.value.begin() + selectedChars.x, input.value.begin() + selectedChars.y);
-                                    input.cursor = selectedChars.x;
-                                } else {
-                                    input.value.erase(input.value.begin() + selectedChars.y - 1, input.value.begin() + selectedChars.x);
-                                    input.cursor = selectedChars.y - 1;
-                                    if (selectedChars.y - 1 > input.value.size()) {
-                                        input.cursor = input.value.size();
-                                    }
-                                }
-                                selecting = false;
-                                charPressed = false;
-                            } else if (input.cursor > 0) {
-                                input.value.erase(input.value.begin() + input.cursor - 1);
-                                input.cursor--;
-                            }
-                        } else {
-                            input.value.insert(input.value.begin() + input.cursor, static_cast<char>(event.text.unicode));
-                            input.cursor++;
-                        }
-                        input._label.text.setString(input.value);
-                        set_thumb_values(input, pad);
-                    }
-                }
-            }
             if (event.type == sf::Event::MouseMoved && !loading) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
                 if (thumbPressed) {
                     for (auto& input : inputs) {
                         if (input.thumbPressed) {
@@ -796,6 +782,34 @@ int main() {
                             }
                         }
                     }
+                    if (event.key.code == sf::Keyboard::V && event.key.control) {
+                        for (auto& input : inputs) {
+                            if (input.hasFocus) {
+                                std::string clipboard = sf::Clipboard::getString();
+                                if (selecting) {
+                                    delete_selected(input, selectedChars);
+                                    selecting = false;
+                                    charPressed = false;
+                                } else {
+                                    input.value.insert(input.value.begin() + input.cursor, clipboard.begin(), clipboard.end());
+                                    input.cursor += clipboard.size();
+                                    input._label.text.setString(input.value);
+                                }
+                                set_thumb_values(input, pad);
+                            }
+                        }
+                    }
+                    if (event.key.code == sf::Keyboard::C && event.key.control) {
+                        for (auto& input : inputs) {
+                            if (input.hasFocus) {
+                                if (selecting) {
+
+                                    std::string clipboard = input.value.substr(selectedChars.x, selectedChars.y - selectedChars.x);
+                                    sf::Clipboard::setString(clipboard);
+                                }
+                            }
+                        }
+                    }
 
                 } else {
                     if (event.key.code == sf::Keyboard::Equal) {
@@ -820,7 +834,41 @@ int main() {
                     }
                 }
             }
-
+            if (event.type == sf::Event::TextEntered) {
+                for (auto& input : inputs) {
+                    if (input.hasFocus) {
+                        if (event.text.unicode == 13) {
+                            if (input.isMultiline) {
+                                input.value.insert(input.value.begin() + input.cursor, '\n');
+                                input.cursor++;
+                            }
+                        } else if (event.text.unicode == 8) {
+                            if (selecting) {
+                                if (selectedChars.y > selectedChars.x) {
+                                    input.value.erase(input.value.begin() + selectedChars.x, input.value.begin() + selectedChars.y);
+                                    input.cursor = selectedChars.x;
+                                } else {
+                                    input.value.erase(input.value.begin() + selectedChars.y - 1, input.value.begin() + selectedChars.x);
+                                    input.cursor = selectedChars.y - 1;
+                                    if (selectedChars.y - 1 > input.value.size()) {
+                                        input.cursor = input.value.size();
+                                    }
+                                }
+                                selecting = false;
+                                charPressed = false;
+                            } else if (input.cursor > 0) {
+                                input.value.erase(input.value.begin() + input.cursor - 1);
+                                input.cursor--;
+                            }
+                        } else {
+                            input.value.insert(input.value.begin() + input.cursor, static_cast<char>(event.text.unicode));
+                            input.cursor++;
+                        }
+                        input._label.text.setString(input.value);
+                        set_thumb_values(input, pad);
+                    }
+                }
+            }
             shouldDraw = true;
         }
 
