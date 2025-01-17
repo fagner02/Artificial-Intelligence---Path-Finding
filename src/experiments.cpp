@@ -20,11 +20,11 @@ void experiment1() {
         for (int j = 0; j < 4; j++) {
             auto cost = costs[j];
             fill_blocks(blocks);
-            file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
             fill_blocks(blocks);
-            file << bfs(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            file << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
             fill_blocks(blocks);
-            file << dfs(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            file << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw)) << "\n";
         }
     }
 }
@@ -53,11 +53,11 @@ void experiment1(
         for (int j = 0; j < 4; j++) {
             auto cost = costs[j];
             fill_blocks(blocks);
-            file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
             fill_blocks(blocks);
-            file << bfs(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            file << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
             fill_blocks(blocks);
-            file << dfs(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            file << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw)) << "\n";
         }
     }
 }
@@ -82,7 +82,7 @@ void experiment2() {
         for (int j = 0; j < 4; j++) {
             auto cost = costs[j];
             fill_blocks(blocks);
-            file1 << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            file1 << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
             for (int k = 0; k < 2; k++) {
                 fill_blocks(blocks);
                 file1 << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
@@ -116,7 +116,7 @@ void experiment2(
         for (int j = 0; j < 4; j++) {
             auto cost = costs[j];
             fill_blocks(blocks);
-            file1 << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j) << "\n";
+            file1 << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
             for (int k = 0; k < 2; k++) {
                 fill_blocks(blocks);
                 file1 << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
@@ -219,9 +219,9 @@ void experiment4() {
             auto cost = costs[j];
 
             fill_blocks(blocks);
-            file3 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
+            file3 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, {}, order) << "\n";
             fill_blocks(blocks);
-            file3 << dfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
+            file3 << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw), order) << "\n";
         }
     }
 }
@@ -255,9 +255,9 @@ void experiment4(
             auto cost = costs[j];
 
             fill_blocks(blocks);
-            file3 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
+            file3 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, {}, order) << "\n";
             fill_blocks(blocks);
-            file3 << dfs(start, target, cost, blocks, std::ref(shouldDraw), j, order) << "\n";
+            file3 << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw), order) << "\n";
         }
     }
 }

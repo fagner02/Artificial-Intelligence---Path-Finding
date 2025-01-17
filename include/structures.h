@@ -30,6 +30,7 @@ struct visited_info {
     bool found_goal = false;
     std::string label = "";
     bool visited = false;
+    bool is_path = false;
 };
 
 struct block {

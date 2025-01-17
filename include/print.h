@@ -10,20 +10,14 @@
 
 #pragma once
 
-void print_path(std::vector<point> path, block visited[space_size][space_size]);
-
-void animate_path(node target, block blocks[space_size][space_size], bool& shouldDraw);
-
 void print(point target, point next, point prev, block visited[space_size][space_size]);
 
-void animate_a_star_path(node target, block visited[space_size][space_size], bool& shouldDraw);
+void animatePath(node target, block visited[space_size][space_size], bool& shouldDraw);
 
-std::vector<node> calculate_path(node target);
+std::vector<node> calculatePath(node target);
 
-std::vector<node> calculate_a_star_path(node target);
-
-void set_block_colors(
+void setBlockColors(
     block blocks[space_size][space_size],
-    point next,
-    bool& shouldDraw
+    bool& shouldDraw,
+    point next = { -1,-1 }
 );

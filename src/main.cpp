@@ -78,30 +78,30 @@ auto create_label(
     int textOutlineThickness = 0
 ) {
 
-    label_data _label = {
+    label_data label = {
         sf::Text(),
         sf::RoundedRectangleShape()
     };
-    _label.text = (sf::Text());
-    _label.text.setFont(font);
-    _label.text.setString(text);
-    _label.text.setCharacterSize(charSize);
-    _label.text.setFillColor(textColor);
-    _label.text.setOutlineColor(textOutColor);
-    _label.text.setOutlineThickness(textOutlineThickness);
-    auto textSize = _label.text.getGlobalBounds();
+    label.text = (sf::Text());
+    label.text.setFont(font);
+    label.text.setString(text);
+    label.text.setCharacterSize(charSize);
+    label.text.setFillColor(textColor);
+    label.text.setOutlineColor(textOutColor);
+    label.text.setOutlineThickness(textOutlineThickness);
+    auto textSize = label.text.getGlobalBounds();
 
     auto boxSize = sf::Vector2f(textSize.width + pad * 2.0, textSize.height - 5.0 + pad * 2.0);
 
-    _label.box = sf::RoundedRectangleShape(boxSize, 10, 20);
-    _label.box.setFillColor(boxColor);
-    _label.box.setPosition(pos);
-    _label.box.setOutlineColor(outColor);
-    _label.box.setOutlineThickness(outlineThickness);
+    label.box = sf::RoundedRectangleShape(boxSize, 10, 20);
+    label.box.setFillColor(boxColor);
+    label.box.setPosition(pos);
+    label.box.setOutlineColor(outColor);
+    label.box.setOutlineThickness(outlineThickness);
 
-    _label.text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2.0 - textSize.width / 2.0, pos.y + boxSize.y / 2.0 - textSize.height + 5.0));
+    label.text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2.0 - textSize.width / 2.0, pos.y + boxSize.y / 2.0 - textSize.height + 5.0));
     pos.y += boxSize.y + 5;
-    return _label;
+    return label;
 }
 
 auto create_textbox(
@@ -112,28 +112,28 @@ auto create_textbox(
     int charSize = 18
 ) {
 
-    label_data _label = {
+    label_data label = {
         sf::Text(),
         sf::RoundedRectangleShape()
     };
-    _label.text = (sf::Text());
-    _label.text.setFont(font);
-    _label.text.setCharacterSize(charSize);
-    auto textSize = _label.text.getGlobalBounds();
+    label.text = (sf::Text());
+    label.text.setFont(font);
+    label.text.setCharacterSize(charSize);
+    auto textSize = label.text.getGlobalBounds();
     textSize.height *= 1;
 
     auto boxSize = sf::Vector2f(textSize.width + pad * 2, textSize.height - 5 + pad * 2);
 
-    _label.box = sf::RoundedRectangleShape(size, 10, 20);
-    _label.box.setFillColor(sf::Color(100, 100, 100));
-    _label.box.setPosition(pos);
-    _label.box.setOutlineColor(sf::Color(255, 255, 255));
-    _label.box.setOutlineThickness(2);
+    label.box = sf::RoundedRectangleShape(size, 10, 20);
+    label.box.setFillColor(sf::Color(100, 100, 100));
+    label.box.setPosition(pos);
+    label.box.setOutlineColor(sf::Color(255, 255, 255));
+    label.box.setOutlineThickness(2);
 
-    _label.text.setPosition(sf::Vector2f(pos.x + pad - textSize.width / 2, pos.y + pad - textSize.height + 5));
+    label.text.setPosition(sf::Vector2f(pos.x + pad - textSize.width / 2, pos.y + pad - textSize.height + 5));
 
     pos.y += boxSize.y + 5;
-    return _label;
+    return label;
 }
 
 void update_label_pos(label_data& label, sf::Vector2f pos) {
@@ -144,7 +144,7 @@ void update_label_pos(label_data& label, sf::Vector2f pos) {
 }
 
 struct text_input {
-    label_data _label;
+    label_data label;
     std::string value;
     std::string tooltip = "";
     bool isMultiline = false;
@@ -156,8 +156,8 @@ struct text_input {
 };
 
 void set_thumb_values(text_input& input, float pad, bool set_pos = false) {
-    auto containerBox = input._label.box.getGlobalBounds();
-    auto textBox = input._label.text.getGlobalBounds();
+    auto containerBox = input.label.box.getGlobalBounds();
+    auto textBox = input.label.text.getGlobalBounds();
     containerBox.width -= pad * 2.0f;
     containerBox.height -= pad * 2.0f;
     float ratio = (textBox.height + 5.0f) / containerBox.height;
@@ -168,17 +168,17 @@ void set_thumb_values(text_input& input, float pad, bool set_pos = false) {
     if (height < 10.0f) height = 10.0f;
     input.scrollThumb.setSize(sf::Vector2f(10.0f, height));
     if (set_pos) {
-        input._label.text.setString(input.value);
+        input.label.text.setString(input.value);
         auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
         input.scrollThumb.setPosition(containerBox.left + containerBox.width - scrollThumbBox.width + pad, containerBox.top + pad);
     }
 }
 
 void set_thumb_pos(text_input& input, float pad, float ypos) {
-    float lower = input._label.box.getGlobalBounds().top + pad;
+    float lower = input.label.box.getGlobalBounds().top + pad;
     float upper =
-        input._label.box.getGlobalBounds().top
-        + input._label.box.getGlobalBounds().height
+        input.label.box.getGlobalBounds().top
+        + input.label.box.getGlobalBounds().height
         - pad - input.scrollThumb.getGlobalBounds().height;
 
     if (ypos < lower) {
@@ -191,8 +191,8 @@ void set_thumb_pos(text_input& input, float pad, float ypos) {
 }
 float get_scroll_sub(text_input& input, float pad) {
     auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
-    auto containerBox = input._label.box.getGlobalBounds();
-    auto textBox = input._label.text.getGlobalBounds();
+    auto containerBox = input.label.box.getGlobalBounds();
+    auto textBox = input.label.text.getGlobalBounds();
     float diff = (containerBox.height - (2.0f * pad) - scrollThumbBox.height);
     if (diff == 0) {
         return 0;
@@ -204,8 +204,8 @@ float get_scroll_sub(text_input& input, float pad) {
 }
 
 void draw_char_selection(text_input& input, sf::RenderWindow& window, int k) {
-    auto pos = input._label.text.findCharacterPos(k);
-    auto glyph = input._label.text.getFont()->getGlyph(input.value[k], input._label.text.getCharacterSize(), false);
+    auto pos = input.label.text.findCharacterPos(k);
+    auto glyph = input.label.text.getFont()->getGlyph(input.value[k], input.label.text.getCharacterSize(), false);
     sf::RectangleShape rect(sf::Vector2f(glyph.bounds.width + 2, 20));
     rect.setFillColor(sf::Color(100, 100, 200));
     rect.setPosition(pos.x, pos.y);
@@ -271,18 +271,6 @@ int main() {
             blocks[i][j].text.setCharacterSize(18);
         }
     }
-
-    // Json::Value root;
-    // std::ifstream file("./e.json");
-    // file >> root;
-
-    // std::cout << "initial: [\n";
-    // for (int i = 0; i < root["initial"].size(); i++) {
-    //     std::cout << "[" << root["initial"][i][0] << ", " << root["initial"][i][1] << "],\n";
-    // }
-    // std::cout << "]\n";
-
-    // return 0;
 
     bool focused = false;
     bool thumbPressed = false;
@@ -426,15 +414,15 @@ int main() {
                             fill_blocks(blocks, constraints[i], start_points[i], target_points[i]);
                             switch (selectedAlgorithm) {
                                 case 0: {
-                                    std::cout << dijkstra(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, true) << "\n";
+                                    std::cout << dijkstra(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], true) << "\n";
                                     break;
                                 }
                                 case 1: {
-                                    std::cout << bfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                                    std::cout << bfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], { 0,1,2,3 }, true) << "\n";
                                     break;
                                 }
                                 case 2: {
-                                    std::cout << dfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                                    std::cout << dfs(start_points[i], target_points[i], costs[cost_ids[i]], 0, constraints[i], blocks, std::ref(shouldDraw), { 0,1,2,3 }, true) << "\n";
                                     break;
                                 }
                                 case 3: {
@@ -505,15 +493,15 @@ int main() {
                         fill_blocks(blocks, constraints, start, target);
                         switch (selectedAlgorithm) {
                         case 0: {
-                            std::cout << dijkstra(start, target, costs[0], blocks, std::ref(shouldDraw), 0, true) << "\n";
+                            std::cout << dijkstra(start, target, costs[0], blocks, std::ref(shouldDraw), 0, constraints, true) << "\n";
                             break;
                         }
                         case 1: {
-                            std::cout << bfs(start, target, costs[0], blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                            std::cout << bfs(start, target, costs[0], blocks, std::ref(shouldDraw), 0, constraints, { 0,1,2,3 }, true) << "\n";
                             break;
                         }
                         case 2: {
-                            std::cout << dfs(start, target, costs[0], blocks, std::ref(shouldDraw), 0, { 0,1,2,3 }, true) << "\n";
+                            std::cout << dfs(start, target, costs[0], 0, constraints, blocks, std::ref(shouldDraw), { 0,1,2,3 }, true) << "\n";
                             break;
                         }
                         case 3: {
@@ -601,7 +589,7 @@ int main() {
                     for (auto& input : inputs) {
                         if (input.hasFocus) {
                             for (int j = 0; j < input.value.size(); j++) {
-                                auto pos = input._label.text.findCharacterPos(j);
+                                auto pos = input.label.text.findCharacterPos(j);
                                 if (pos.x < mousePos.x && pos.y < mousePos.y) {
                                     selectedChars.y = j + 1;
                                     continue;
@@ -622,7 +610,7 @@ int main() {
                         }
                     }
                     for (auto& input : inputs) {
-                        if (input._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y) &&
+                        if (input.label.box.getGlobalBounds().contains(mousePos.x, mousePos.y) &&
                             !input.scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)
                             ) {
                             window.setMouseCursor(textCursor);
@@ -642,8 +630,8 @@ int main() {
                         }
                     }
                     for (auto& input : inputs) {
-                        if (input._label.box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                            input._label.box.setOutlineColor(sf::Color(130, 130, 130));
+                        if (input.label.box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                            input.label.box.setOutlineColor(sf::Color(130, 130, 130));
                             input.hasFocus = true;
                             focused = true;
                             if (input.scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
@@ -652,7 +640,7 @@ int main() {
                                 lastMousePos = sf::Vector2f(mousePos);
                             } else {
                                 for (int j = 0; j < input.value.size(); j++) {
-                                    auto pos = input._label.text.findCharacterPos(j);
+                                    auto pos = input.label.text.findCharacterPos(j);
                                     if (pos.x < mousePos.x && pos.y < mousePos.y) {
                                         if (input.value[j] == '\n') {
                                             selectedChars.x = j;
@@ -671,7 +659,7 @@ int main() {
                                 charPressed = true;
                             }
                         } else {
-                            input._label.box.setOutlineColor(sf::Color::White);
+                            input.label.box.setOutlineColor(sf::Color::White);
                             input.hasFocus = false;
                             focused = false;
                             selecting = false;
@@ -715,7 +703,7 @@ int main() {
                                 if (input.cursor > 0) {
                                     input.cursor--;
                                     if (input.value[input.cursor] == '\n') {
-                                        set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - input._label.text.getCharacterSize());
+                                        set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - input.label.text.getCharacterSize());
                                     }
                                 }
                             }
@@ -726,7 +714,7 @@ int main() {
                             if (input.hasFocus) {
                                 if (input.cursor < input.value.size()) {
                                     if (input.value[input.cursor] == '\n') {
-                                        set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + input._label.text.getCharacterSize());
+                                        set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + input.label.text.getCharacterSize());
                                     }
                                     input.cursor++;
                                 }
@@ -754,7 +742,7 @@ int main() {
                                 if (input.cursor > index3) {
                                     input.cursor = index3;
                                 }
-                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + input._label.text.getCharacterSize());
+                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + input.label.text.getCharacterSize());
                             }
                         }
                     }
@@ -778,7 +766,7 @@ int main() {
                                     input.cursor = 0;
                                 }
 
-                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - input._label.text.getCharacterSize());
+                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - input.label.text.getCharacterSize());
                             }
                         }
                     }
@@ -793,7 +781,7 @@ int main() {
                                 } else {
                                     input.value.insert(input.value.begin() + input.cursor, clipboard.begin(), clipboard.end());
                                     input.cursor += clipboard.size();
-                                    input._label.text.setString(input.value);
+                                    input.label.text.setString(input.value);
                                 }
                                 set_thumb_values(input, pad);
                             }
@@ -803,9 +791,9 @@ int main() {
                         for (auto& input : inputs) {
                             if (input.hasFocus) {
                                 if (selecting) {
-
-                                    std::string clipboard = input.value.substr(selectedChars.x, selectedChars.y - selectedChars.x);
-                                    sf::Clipboard::setString(clipboard);
+                                    std::string selection = get_select(input, selectedChars);
+                                    sf::Clipboard::setString(selection);
+                                    std::cout << selection;
                                 }
                             }
                         }
@@ -864,7 +852,7 @@ int main() {
                             input.value.insert(input.value.begin() + input.cursor, static_cast<char>(event.text.unicode));
                             input.cursor++;
                         }
-                        input._label.text.setString(input.value);
+                        input.label.text.setString(input.value);
                         set_thumb_values(input, pad);
                     }
                 }
@@ -899,11 +887,11 @@ int main() {
                 }
             }
             for (auto& input : inputs) {
-                window.draw(input._label.box);
+                window.draw(input.label.box);
 
-                auto textBox = input._label.text.getGlobalBounds();
+                auto textBox = input.label.text.getGlobalBounds();
 
-                auto containerBox = input._label.box.getGlobalBounds();
+                auto containerBox = input.label.box.getGlobalBounds();
                 containerBox.height -= pad * 2.0f;
                 containerBox.width -= pad * 2.0f;
                 float sub = get_scroll_sub(input, pad);
@@ -926,17 +914,17 @@ int main() {
                         }
                     }
                 }
-                input._label.text.setPosition(containerBox.left + pad, containerBox.top + pad - sub);
+                input.label.text.setPosition(containerBox.left + pad, containerBox.top + pad - sub);
                 if (input.value.size() == 0) {
-                    input._label.text.setString(input.tooltip);
-                    input._label.text.setFillColor(sf::Color(150, 150, 150));
-                    window.draw(input._label.text);
-                    input._label.text.setFillColor(sf::Color(255, 255, 255));
+                    input.label.text.setString(input.tooltip);
+                    input.label.text.setFillColor(sf::Color(150, 150, 150));
+                    window.draw(input.label.text);
+                    input.label.text.setFillColor(sf::Color(255, 255, 255));
                 } else {
-                    window.draw(input._label.text);
+                    window.draw(input.label.text);
                 }
                 if (input.hasFocus) {
-                    auto charSize = input._label.text.findCharacterPos(input.cursor);
+                    auto charSize = input.label.text.findCharacterPos(input.cursor);
                     input.cursorLine.setPosition(charSize.x, charSize.y);
                     window.draw(input.cursorLine);
                 }

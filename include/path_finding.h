@@ -28,9 +28,10 @@ std::string dfs(
     point start,
     point target,
     cost_fn cost,
+    int cost_id,
+    std::set<point> constraints,
     block blocks[space_size][space_size],
     bool& shouldDraw,
-    int cost_id,
     std::vector<int> order = { 0, 1, 2, 3 },
     bool animate = false
 );
@@ -42,6 +43,7 @@ std::string bfs(
     block blocks[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
+    std::set<point> constraints,
     std::vector<int> order = { 0, 1, 2, 3 },
     bool animate = false
 );
@@ -66,6 +68,7 @@ std::string dijkstra(
     block blocks[space_size][space_size],
     bool& shouldDraw,
     int cost_id,
+    std::set<point> constraints,
     bool animate = false
 );
 
