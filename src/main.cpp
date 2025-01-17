@@ -313,10 +313,42 @@ int main() {
         sf::Color::White, sf::Color::White, 5, 0));
     texts.push_back(create_label(font, pos, pad, "utilizar entrada aleatoria", 20, sf::Color::White, sf::Color::White,
         sf::Color::White, sf::Color::White, 5, 0));
+    texts.push_back(create_label(font, pos, pad, "", 20, sf::Color::White, sf::Color::White,
+        sf::Color(80, 80, 80), sf::Color::Black, 0, 0));
+
+    auto toastElem = &texts[12];
+    toastElem->visible = false;
+    std::string toastText = "";
+
+    auto setToastText = [&](std::string text) {
+        std::thread(
+            [&toastText, text, &toastElem, &shouldDraw]() {
+                toastElem->visible = true;
+                toastText = text;
+                auto color = toastElem->box.getFillColor();
+                auto textColor = toastElem->text.getFillColor();
+                std::this_thread::sleep_for(std::chrono::seconds(5));
+                int sub = 10;
+                while (color.a > 0) {
+                    color.a = int(color.a) - sub < 0 ? 0 : color.a - sub;
+                    textColor.a = int(textColor.a) - sub < 0 ? 0 : textColor.a - sub;
+                    toastElem->box.setFillColor(color);
+                    toastElem->text.setFillColor(textColor);
+                    shouldDraw = true;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+                toastText = "";
+                toastElem->visible = false;
+                color.a = 255;
+                textColor.a = 255;
+                toastElem->box.setFillColor(color);
+                toastElem->text.setFillColor(textColor);
+            }
+        ).detach();
+        };
 
     texts[10].visible = false;
     texts[11].visible = false;
-
 
     set_thumb_values(inputs[0], pad, true);
 
@@ -402,13 +434,13 @@ int main() {
                     file >> p.x >> p.y;
                     constraints[i].insert(p);
                 }
-                file.close();
             }
+            file.close();
             if (selectingAlgorithm) {
                 selectingAlgorithm = false;
                 selectingExperiment = false;
 
-                auto a1 = std::thread(
+                std::thread(
                     [start_points, target_points, count, constraints, &blocks, selectedAlgorithm, cost_ids, &shouldDraw]() {
                         for (int i = 0; i < count;i++) {
                             fill_blocks(blocks, constraints[i], start_points[i], target_points[i]);
@@ -438,41 +470,39 @@ int main() {
                             }
                         }
                     }
-                );
-                a1.detach();
+                ).detach();
             }
             if (selectingExperiment) {
                 selectingAlgorithm = false;
                 selectingExperiment = false;
-                auto a1 = std::thread(
-                    [&]() {
+                std::thread(
+                    [start_points,target_points, orders, constraints, selectedExperiment, &setToastText]() {
                         switch (selectedExperiment) {
                             case 0: {
-                                experiment1(start_points, target_points);
+                                experiment1(start_points, target_points, setToastText);
                                 break;
                             }
                             case 1: {
-                                experiment2(start_points, target_points);
+                                experiment2(start_points, target_points, setToastText);
                                 break;
                             }
                             case 2: {
-                                experiment3(start_points, target_points);
+                                experiment3(start_points, target_points, setToastText);
                                 break;
                             }
                             case 3: {
-                                experiment4(start_points, target_points, orders);
+                                experiment4(start_points, target_points, orders, setToastText);
                                 break;
                             }
                             case 4: {
-                                experiment5(start_points, target_points, orders, constraints);
+                                experiment5(start_points, target_points, orders, constraints, setToastText);
                                 break;
                             }
                             default:
                                 break;
                         }
                     }
-                );
-                a1.detach();
+                ).detach();
             }
         } },
         { &texts[11],[&]() {
@@ -481,7 +511,7 @@ int main() {
             if (selectingAlgorithm) {
                 selectingAlgorithm = false;
                 selectingExperiment = false;
-                auto a1 = std::thread(
+                std::thread(
                     [&blocks, &shouldDraw, selectedAlgorithm]() {
                         srand((unsigned)time(NULL));
                         point start = { rand() % 31, rand() % 31 };
@@ -516,8 +546,7 @@ int main() {
                             break;
                         }
                     }
-                );
-                a1.detach();
+                ).detach();
             }
             if (selectingExperiment) {
                 selectingAlgorithm = false;
@@ -879,6 +908,16 @@ int main() {
                 update_label_pos(texts[10], sf::Vector2f(instructions.getPosition().x, instructionsSize.top + instructionsSize.height + 10));
                 auto textBox = texts[10].box.getGlobalBounds();
                 update_label_pos(texts[11], sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
+            }
+            if (toastElem->visible) {
+                std::cout << toastText << "\n";
+                toastElem->text.setString(toastText);
+                auto textSize = toastElem->text.getGlobalBounds();
+                toastElem->box.setSize(sf::Vector2f(textSize.width + pad * 2.0, textSize.height - 5.0 + pad * 2.0));
+                toastElem->box.setPosition(size.x / 2.0 - toastElem->box.getSize().x / 2.0, 20);
+                toastElem->text.setPosition(size.x / 2.0 - textSize.width / 2.0, 20 + pad);
+                window.draw(toastElem->box);
+                window.draw(toastElem->text);
             }
             for (int i = 0; i < texts.size();i++) {
                 if (texts[i].visible) {

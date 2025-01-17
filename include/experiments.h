@@ -13,24 +13,29 @@ void experiment5();
 
 void experiment1(
     std::vector<point> start_points,
-    std::vector<point> target_points
+    std::vector<point> target_points,
+    std::function<void(std::string)> toastText
 );
 void experiment2(
     std::vector<point> start_points,
-    std::vector<point> target_points
+    std::vector<point> target_points,
+    std::function<void(std::string)> toastText
 );
 void experiment3(
     std::vector<point> start_points,
-    std::vector<point> target_points
+    std::vector<point> target_points,
+    std::function<void(std::string)> toastText
 );
 void experiment4(
     std::vector<point> start_points,
     std::vector<point> target_points,
-    std::vector<std::vector<int>> orders
+    std::vector<std::vector<int>> orders,
+    std::function<void(std::string)> toastText
 );
 void experiment5(
     std::vector<point> start_points,
     std::vector<point> target_points,
     std::vector<std::vector<int>> orders,
-    std::vector<std::set<point>> constraints
+    std::vector<std::set<point>> constraints,
+    std::function<void(std::string)> toastText
 );
