@@ -1,10 +1,10 @@
 #include <experiments.h>
 
-void experiment1() {
+void experiment1(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file("log1.csv");
+    std::ofstream file(output_file);
     if (!file.is_open()) {
         std::cout << "Erro ao abrir o arquivo log.csv\n";
         return;
@@ -27,12 +27,14 @@ void experiment1() {
             file << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw)) << "\n";
         }
     }
+    file.close();
 }
 
 void experiment1(
     std::vector<point> start_points,
     std::vector<point> target_points,
-    std::function<void(std::wstring)> toastText
+    std::function<void(std::wstring)> toastText,
+    std::string output_file
 ) {
     if (start_points.size() != 50 || target_points.size() != 50) {
         toastText(L"A entrada do experimento 1 deve ter 50 instâncias\n");
@@ -41,7 +43,7 @@ void experiment1(
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file("log1.csv");
+    std::ofstream file(output_file);
     if (!file.is_open()) {
         toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
@@ -61,18 +63,19 @@ void experiment1(
             file << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw)) << "\n";
         }
     }
+    file.close();
 }
 
-void experiment2() {
+void experiment2(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file1("log2.csv");
-    if (!file1.is_open()) {
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
         std::cout << "Erro ao abrir o arquivo log.csv\n";
         return;
     }
-    file1 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     srand((unsigned)time(NULL));
 
@@ -83,19 +86,21 @@ void experiment2() {
         for (int j = 0; j < 4; j++) {
             auto cost = costs[j];
             fill_blocks(blocks);
-            file1 << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
+            file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
             for (int k = 0; k < 2; k++) {
                 fill_blocks(blocks);
-                file1 << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
+                file << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }
+    file.close();
 }
 
 void experiment2(
     std::vector<point> start_points,
     std::vector<point> target_points,
-    std::function<void(std::wstring)> toastText
+    std::function<void(std::wstring)> toastText,
+    std::string output_file
 ) {
     if (start_points.size() != 50 || target_points.size() != 50) {
         toastText(L"A entrada do experimento 2 deve ter 50 instâncias\n");
@@ -104,12 +109,12 @@ void experiment2(
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file1("log2.csv");
-    if (!file1.is_open()) {
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
         toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
-    file1 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     for (int i = 0; i < 50; i++) {
         point start = start_points[i];
@@ -118,26 +123,27 @@ void experiment2(
         for (int j = 0; j < 4; j++) {
             auto cost = costs[j];
             fill_blocks(blocks);
-            file1 << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
+            file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
             for (int k = 0; k < 2; k++) {
                 fill_blocks(blocks);
-                file1 << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
+                file << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }
+    file.close();
 }
 
-void experiment3() {
+void experiment3(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file2("log3.csv");
-    if (!file2.is_open()) {
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
         std::cout << "Erro ao abrir o arquivo log.csv\n";
         return;
     }
 
-    file2 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     srand((unsigned)time(NULL));
 
@@ -150,19 +156,21 @@ void experiment3() {
 
             for (int k = 0; k < 2; k++) {
                 fill_blocks(blocks);
-                file2 << greedy_search(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
+                file << greedy_search(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
                 fill_blocks(blocks);
-                file2 << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
+                file << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }
+    file.close();
 }
 
 
 void experiment3(
     std::vector<point> start_points,
     std::vector<point> target_points,
-    std::function<void(std::wstring)> toastText
+    std::function<void(std::wstring)> toastText,
+    std::string output_file
 ) {
     if (start_points.size() != 50 || target_points.size() != 50) {
         toastText(L"A entrada do experimento 3 deve ter 50 instâncias\n");
@@ -171,13 +179,13 @@ void experiment3(
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file2("log3.csv");
-    if (!file2.is_open()) {
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
         toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
 
-    file2 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     srand((unsigned)time(NULL));
 
@@ -190,25 +198,26 @@ void experiment3(
 
             for (int k = 0; k < 2; k++) {
                 fill_blocks(blocks);
-                file2 << greedy_search(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
+                file << greedy_search(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
                 fill_blocks(blocks);
-                file2 << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
+                file << a_star(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }
+    file.close();
 }
 
-void experiment4() {
+void experiment4(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file3("log4.csv");
-    if (!file3.is_open()) {
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
         std::cout << "Erro ao abrir o arquivo log.csv\n";
         return;
     }
 
-    file3 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     srand((unsigned)time(NULL));
 
@@ -222,18 +231,20 @@ void experiment4() {
             auto cost = costs[j];
 
             fill_blocks(blocks);
-            file3 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, {}, order) << "\n";
+            file << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, {}, order) << "\n";
             fill_blocks(blocks);
-            file3 << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw), order) << "\n";
+            file << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw), order) << "\n";
         }
     }
+    file.close();
 }
 
 void experiment4(
     std::vector<point> start_points,
     std::vector<point> target_points,
     std::vector<std::vector<int>> orders,
-    std::function<void(std::wstring)> toastText
+    std::function<void(std::wstring)> toastText,
+    std::string output_file
 ) {
     if (start_points.size() != 20 || target_points.size() != 20 || orders.size() != 20) {
         toastText(L"A entrada do experimento 4 deve ter 20 instâncias\n");
@@ -242,13 +253,13 @@ void experiment4(
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file3("log4.csv");
-    if (!file3.is_open()) {
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
         toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
 
-    file3 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     for (int i = 0; i < 20; i++) {
         point start = start_points[i];
@@ -259,24 +270,25 @@ void experiment4(
             auto cost = costs[j];
 
             fill_blocks(blocks);
-            file3 << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, {}, order) << "\n";
+            file << bfs(start, target, cost, blocks, std::ref(shouldDraw), j, {}, order) << "\n";
             fill_blocks(blocks);
-            file3 << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw), order) << "\n";
+            file << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw), order) << "\n";
         }
     }
+    file.close();
 }
 
-void experiment5() {
+void experiment5(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file4("log5.csv");
-    if (!file4.is_open()) {
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
         std::cout << "Erro ao abrir o arquivo log.csv\n";
         return;
     }
 
-    file4 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     srand((unsigned)time(NULL));
 
@@ -295,10 +307,11 @@ void experiment5() {
             auto cost = costs[j];
             for (int k = 0; k < 2;k++) {
                 fill_blocks(blocks);
-                file4 << a_star(start, target, cost, heuristic_fns[k], j, k, constraints, blocks, std::ref(shouldDraw)) << "\n";
+                file << a_star(start, target, cost, heuristic_fns[k], j, k, constraints, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }
+    file.close();
 }
 
 void experiment5(
@@ -306,7 +319,8 @@ void experiment5(
     std::vector<point> target_points,
     std::vector<std::vector<int>> orders,
     std::vector<std::set<point>> constraints,
-    std::function<void(std::wstring)> toastText
+    std::function<void(std::wstring)> toastText,
+    std::string output_file
 ) {
     if (start_points.size() != 25 || target_points.size() != 25 || orders.size() != 25 || constraints.size() != 25) {
         toastText(L"A entrada do experimento 5 deve ter 25 instâncias\n");
@@ -315,13 +329,13 @@ void experiment5(
     block blocks[space_size][space_size];
     bool shouldDraw = false;
     fill_blocks(blocks);
-    std::ofstream file4("log5.csv");
-    if (!file4.is_open()) {
+    std::ofstream file(output_file);
+    if (!file.is_open()) {
         toastText(L"Erro ao abrir o arquivo log.csv\n");
         return;
     }
 
-    file4 << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+    file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     for (int i = 0; i < 25; i++) {
         point start = start_points[i];
@@ -334,8 +348,9 @@ void experiment5(
             auto cost = costs[j];
             for (int k = 0; k < 2;k++) {
                 fill_blocks(blocks);
-                file4 << a_star(start, target, cost, heuristic_fns[k], j, k, constraint, blocks, std::ref(shouldDraw)) << "\n";
+                file << a_star(start, target, cost, heuristic_fns[k], j, k, constraint, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }
+    file.close();
 }

@@ -64,7 +64,7 @@ void draw(
     }
 }
 
-auto create_label(
+auto createLabel(
     sf::Font& font,
     sf::Vector2f& pos,
     float pad,
@@ -104,7 +104,7 @@ auto create_label(
     return label;
 }
 
-auto create_textbox(
+auto createTextbox(
     sf::Font& font,
     sf::Vector2f& pos,
     float pad,
@@ -134,7 +134,7 @@ auto create_textbox(
     return label;
 }
 
-void update_label_pos(label_data& label, sf::Vector2f pos) {
+void updateLabelPos(label_data& label, sf::Vector2f pos) {
     label.box.setPosition(pos);
     auto textSize = label.text.getGlobalBounds();
     label.text.setPosition(sf::Vector2f(pos.x + label.box.getSize().x / 2 - textSize.width / 2, pos.y + label.box.getSize().y / 2.0 - textSize.height + 5));
@@ -152,7 +152,7 @@ struct text_input {
     sf::RoundedRectangleShape scrollThumb = sf::RoundedRectangleShape(sf::Vector2f(10, 10), 5, 20);
 };
 
-void set_thumb_values(text_input& input, float pad, bool set_pos = false) {
+void setThumbValues(text_input& input, float pad, bool set_pos = false) {
     auto containerBox = input.label.box.getGlobalBounds();
     auto textBox = input.label.text.getGlobalBounds();
     containerBox.width -= pad * 2.0f;
@@ -171,7 +171,7 @@ void set_thumb_values(text_input& input, float pad, bool set_pos = false) {
     }
 }
 
-void set_thumb_pos(text_input& input, float pad, float ypos) {
+void setThumbPos(text_input& input, float pad, float ypos) {
     float lower = input.label.box.getGlobalBounds().top + pad;
     float upper =
         input.label.box.getGlobalBounds().top
@@ -186,7 +186,7 @@ void set_thumb_pos(text_input& input, float pad, float ypos) {
     }
     input.scrollThumb.setPosition(input.scrollThumb.getPosition().x, ypos);
 }
-float get_scroll_sub(text_input& input, float pad) {
+float getScrollSub(text_input& input, float pad) {
     auto scrollThumbBox = input.scrollThumb.getGlobalBounds();
     auto containerBox = input.label.box.getGlobalBounds();
     auto textBox = input.label.text.getGlobalBounds();
@@ -200,7 +200,7 @@ float get_scroll_sub(text_input& input, float pad) {
     return offset * (scrollThumbBox.top - containerBox.top - pad) / diff;
 }
 
-void draw_char_selection(text_input& input, sf::RenderWindow& window, int k) {
+void drawCharSelection(text_input& input, sf::RenderWindow& window, int k) {
     auto pos = input.label.text.findCharacterPos(k);
     auto glyph = input.label.text.getFont()->getGlyph(input.value[k], input.label.text.getCharacterSize(), false);
     sf::RectangleShape rect(sf::Vector2f(glyph.bounds.width + 2, 20));
@@ -209,7 +209,7 @@ void draw_char_selection(text_input& input, sf::RenderWindow& window, int k) {
     window.draw(rect);
 }
 
-void delete_selected(text_input& input, sf::Vector2f selectedChars) {
+void deleteSelected(text_input& input, sf::Vector2f selectedChars) {
     if (selectedChars.y > selectedChars.x) {
         input.value.erase(input.value.begin() + selectedChars.x, input.value.begin() + selectedChars.y);
         input.cursor = selectedChars.x;
@@ -222,12 +222,22 @@ void delete_selected(text_input& input, sf::Vector2f selectedChars) {
     }
 }
 
-std::string get_select(text_input& input, sf::Vector2f selectedChars) {
+std::string getSelect(text_input& input, sf::Vector2f selectedChars) {
     if (selectedChars.x > selectedChars.y) {
         return input.value.substr(selectedChars.y, selectedChars.x - selectedChars.y);
     } else {
         return input.value.substr(selectedChars.x, selectedChars.y - selectedChars.x);
     }
+}
+
+std::string processFileName(std::string file_name, std::string default_name, std::string extension) {
+    if (file_name == "") {
+        file_name = default_name;
+    }
+    if (file_name.find(extension) == std::string::npos) {
+        file_name += extension;
+    }
+    return file_name;
 }
 
 int main() {
@@ -292,34 +302,34 @@ int main() {
 
     std::vector<label_data> texts;
     sf::Vector2f pos(10, 10);
-    texts.push_back(create_label(font, pos, pad, "Dijkstra"));
-    texts.push_back(create_label(font, pos, pad, "Bfs"));
-    texts.push_back(create_label(font, pos, pad, "Dfs"));
-    texts.push_back(create_label(font, pos, pad, "Greedy"));
-    texts.push_back(create_label(font, pos, pad, "A*"));
-    texts.push_back(create_label(font, pos, pad, "Experimento 1"));
-    texts.push_back(create_label(font, pos, pad, "Experimento 2"));
-    texts.push_back(create_label(font, pos, pad, "Experimento 3"));
-    texts.push_back(create_label(font, pos, pad, "Experimento 4"));
-    texts.push_back(create_label(font, pos, pad, "Experimento 5"));
+    texts.push_back(createLabel(font, pos, pad, "Dijkstra"));
+    texts.push_back(createLabel(font, pos, pad, "Bfs"));
+    texts.push_back(createLabel(font, pos, pad, "Dfs"));
+    texts.push_back(createLabel(font, pos, pad, "Greedy"));
+    texts.push_back(createLabel(font, pos, pad, "A*"));
+    texts.push_back(createLabel(font, pos, pad, "Experimento 1"));
+    texts.push_back(createLabel(font, pos, pad, "Experimento 2"));
+    texts.push_back(createLabel(font, pos, pad, "Experimento 3"));
+    texts.push_back(createLabel(font, pos, pad, "Experimento 4"));
+    texts.push_back(createLabel(font, pos, pad, "Experimento 5"));
 
     std::vector<text_input> inputs = {
-        {create_textbox(font, pos, pad, { 300, 40 }), "input.txt", "Nome do arquivo de entrada", false},
-        {create_textbox(font, pos, pad, { 300, 40 }), "out.csv", "Nome do arquivo de saida", false},
+        {createTextbox(font, pos, pad, { 300, 40 }), "input.txt", "Nome do arquivo de entrada", false},
+        {createTextbox(font, pos, pad, { 300, 40 }), "out.csv", "Nome do arquivo de saida", false},
     };
 
-    set_thumb_values(inputs[0], pad, true);
-    set_thumb_values(inputs[1], pad, true);
+    setThumbValues(inputs[0], pad, true);
+    setThumbValues(inputs[1], pad, true);
 
-    texts.push_back(create_label(font, pos, pad, "utilizar input.txt", 20, sf::Color::White, sf::Color::White,
+    texts.push_back(createLabel(font, pos, pad, "utilizar input.txt", 20, sf::Color::White, sf::Color::White,
         sf::Color::White, sf::Color::White, 5, 0));
-    texts.push_back(create_label(font, pos, pad, "utilizar entrada aleatoria", 20, sf::Color::White, sf::Color::White,
+    texts.push_back(createLabel(font, pos, pad, "utilizar entrada aleatoria", 20, sf::Color::White, sf::Color::White,
         sf::Color::White, sf::Color::White, 5, 0));
-    texts.push_back(create_label(font, pos, pad, "", 20, sf::Color::White, sf::Color::White,
+    texts.push_back(createLabel(font, pos, pad, "", 20, sf::Color::White, sf::Color::White,
         sf::Color(80, 80, 80), sf::Color::Black, 0, 0));
-    texts.push_back(create_label(font, pos, pad, " ", 20, sf::Color::White, sf::Color::White,
+    texts.push_back(createLabel(font, pos, pad, " ", 20, sf::Color::White, sf::Color::White,
         sf::Color::White, sf::Color::White, 5, 0));
-    texts.push_back(create_label(font, pos, pad, "animar:", 20, sf::Color::White, sf::Color::White,
+    texts.push_back(createLabel(font, pos, pad, "animar:", 20, sf::Color::White, sf::Color::White,
         sf::Color(100, 100, 100), sf::Color::White, 5, 0));
 
     auto inputFile = &inputs[0];
@@ -424,7 +434,12 @@ int main() {
             std::vector<int> heuristic_ids;
             std::vector<std::vector<int>> orders;
             std::vector<std::set<point>> constraints;
-            std::ifstream file("input.txt");
+            std::string file_name = processFileName(inputFile->value, "input.txt", ".txt");
+            std::ifstream file(file_name);
+            if (file.fail()) {
+                setToastText(L"Arquivo de entrada nao encontrado");
+                return;
+            }
             int count;
             file >> count;
             std::cout << count << "\n";
@@ -453,39 +468,57 @@ int main() {
                 }
             }
             file.close();
+            std::string output_file = processFileName(outputFile->value, "out.csv", ".csv");
             if (selectingAlgorithm) {
                 selectingAlgorithm = false;
                 selectingExperiment = false;
 
                 std::thread(
-                    [start_points, target_points, count, constraints, orders, heuristic_ids, &blocks, selectedAlgorithm, cost_ids, &shouldDraw, shouldAnimate]() {
+                    [start_points,
+                    target_points,
+                    count,
+                    constraints,
+                    orders,
+                    heuristic_ids,
+                    output_file,
+                    &blocks,
+                    selectedAlgorithm,
+                    cost_ids,
+                    &shouldDraw,
+                    shouldAnimate,
+                    &setToastText]() {
+                    std::stringstream ss;
                         for (int i = 0; i < count;i++) {
                             fill_blocks(blocks, constraints[i], start_points[i], target_points[i]);
                             switch (selectedAlgorithm) {
                                 case 0: {
-                                    std::cout << dijkstra(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], shouldAnimate) << "\n";
+                                    ss << dijkstra(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], shouldAnimate) << "\n";
                                     break;
                                 }
                                 case 1: {
-                                    std::cout << bfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], orders[i], shouldAnimate) << "\n";
+                                    ss << bfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], orders[i], shouldAnimate) << "\n";
                                     break;
                                 }
                                 case 2: {
-                                    std::cout << dfs(start_points[i], target_points[i], costs[cost_ids[i]], 0, constraints[i], blocks, std::ref(shouldDraw), orders[i], shouldAnimate) << "\n";
+                                    ss << dfs(start_points[i], target_points[i], costs[cost_ids[i]], 0, constraints[i], blocks, std::ref(shouldDraw), orders[i], shouldAnimate) << "\n";
                                     break;
                                 }
                                 case 3: {
-                                    std::cout << greedy_search(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[heuristic_ids[i]], cost_ids[i], heuristic_ids[i], constraints[i], blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
+                                    ss << greedy_search(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[heuristic_ids[i]], cost_ids[i], heuristic_ids[i], constraints[i], blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
                                     break;
                                 }
                                 case 4: {
-                                    std::cout << a_star(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[heuristic_ids[i]], cost_ids[i], heuristic_ids[i], constraints[i], blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
+                                    ss << a_star(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[heuristic_ids[i]], cost_ids[i], heuristic_ids[i], constraints[i], blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
                                     break;
                                 }
                                 default:
                                     break;
                             }
                         }
+                        std::ofstream out(output_file);
+                        out << ss.str();
+                        out.close();
+                        setToastText(L"Arquivo de saída gerado");
                     }
                 ).detach();
             }
@@ -493,30 +526,31 @@ int main() {
                 selectingAlgorithm = false;
                 selectingExperiment = false;
                 std::thread(
-                    [start_points,target_points, orders, constraints, selectedExperiment, &setToastText]() {
+                    [start_points,target_points, orders, constraints, selectedExperiment, output_file, &setToastText]() {
                         switch (selectedExperiment) {
                             case 0: {
-                                experiment1(start_points, target_points, setToastText);
+                                experiment1(start_points, target_points, setToastText, output_file);
                                 break;
                             }
                             case 1: {
-                                experiment2(start_points, target_points, setToastText);
+                                experiment2(start_points, target_points, setToastText, output_file);
                                 break;
                             }
                             case 2: {
-                                experiment3(start_points, target_points, setToastText);
+                                experiment3(start_points, target_points, setToastText, output_file);
                                 break;
                             }
                             case 3: {
-                                experiment4(start_points, target_points, orders, setToastText);
+                                experiment4(start_points, target_points, orders, setToastText, output_file);
                                 break;
                             }
                             case 4: {
-                                experiment5(start_points, target_points, orders, constraints, setToastText);
+                                experiment5(start_points, target_points, orders, constraints, setToastText, output_file);
                                 break;
                             }
                             default:
                                 break;
+                            setToastText(L"Arquivo de saída gerado");
                         }
                     }
                 ).detach();
@@ -527,11 +561,12 @@ int main() {
             texts[11].visible = false;
             checkBox->visible = false;
             checkText->visible = false;
+            std::string output_file = processFileName(outputFile->value, "out.csv", ".csv");
             if (selectingAlgorithm) {
                 selectingAlgorithm = false;
                 selectingExperiment = false;
                 std::thread(
-                    [&blocks, &shouldDraw, selectedAlgorithm, shouldAnimate]() {
+                    [&blocks, &shouldDraw, selectedAlgorithm, output_file, shouldAnimate, &setToastText]() {
                         srand((unsigned)time(NULL));
                         point start = { rand() % 31, rand() % 31 };
                         point target = { rand() % 31, rand() % 31 };
@@ -542,30 +577,33 @@ int main() {
                         int cost_id = rand() % 4;
                         int heuristic_id = rand() % 2;
                         fill_blocks(blocks, constraints, start, target);
+                        std::ofstream out(output_file);
                         switch (selectedAlgorithm) {
                         case 0: {
-                            std::cout << dijkstra(start, target, costs[cost_id], blocks, std::ref(shouldDraw), cost_id, constraints, shouldAnimate) << "\n";
+                            out << dijkstra(start, target, costs[cost_id], blocks, std::ref(shouldDraw), cost_id, constraints, shouldAnimate) << "\n";
                             break;
                         }
                         case 1: {
-                            std::cout << bfs(start, target, costs[cost_id], blocks, std::ref(shouldDraw), cost_id, constraints, { 0,1,2,3 }, shouldAnimate) << "\n";
+                            out << bfs(start, target, costs[cost_id], blocks, std::ref(shouldDraw), cost_id, constraints, { 0,1,2,3 }, shouldAnimate) << "\n";
                             break;
                         }
                         case 2: {
-                            std::cout << dfs(start, target, costs[cost_id], cost_id, constraints, blocks, std::ref(shouldDraw), { 0,1,2,3 }, shouldAnimate) << "\n";
+                            out << dfs(start, target, costs[cost_id], cost_id, constraints, blocks, std::ref(shouldDraw), { 0,1,2,3 }, shouldAnimate) << "\n";
                             break;
                         }
                         case 3: {
-                            std::cout << greedy_search(start, target, costs[cost_id], heuristic_fns[heuristic_id], cost_id, heuristic_id, constraints, blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
+                            out << greedy_search(start, target, costs[cost_id], heuristic_fns[heuristic_id], cost_id, heuristic_id, constraints, blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
                             break;
                         }
                         case 4: {
-                            std::cout << a_star(start, target, costs[cost_id], heuristic_fns[heuristic_id], cost_id, heuristic_id, constraints, blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
+                            out << a_star(start, target, costs[cost_id], heuristic_fns[heuristic_id], cost_id, heuristic_id, constraints, blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
                             break;
                         }
                         default:
                             break;
                         }
+                        out.close();
+                        setToastText(L"Arquivo de saída gerado");
                     }
                 ).detach();
             }
@@ -573,33 +611,34 @@ int main() {
                 selectingAlgorithm = false;
                 selectingExperiment = false;
                 auto a1 = std::thread(
-                    [&blocks, &shouldDraw, &selectedExperiment, &loading]() {
+                    [&blocks, &shouldDraw, &selectedExperiment, &loading, output_file, &setToastText]() {
                         loading = true;
                         switch (selectedExperiment) {
                             case 0: {
-                                experiment1();
+                                experiment1(output_file);
                                 break;
                             }
                             case 1: {
-                                experiment2();
+                                experiment2(output_file);
                                 break;
                             }
                             case 2: {
-                                experiment3();
+                                experiment3(output_file);
                                 break;
                             }
                             case 3: {
-                                experiment4();
+                                experiment4(output_file);
                                 break;
                             }
                             case 4: {
-                                experiment5();
+                                experiment5(output_file);
                                 break;
                             }
                             default:
                                 break;
                         }
                         loading = false;
+                        setToastText(L"Arquivo de saída gerado");
                     }
                 );
                 a1.detach();
@@ -639,7 +678,7 @@ int main() {
                     for (auto& input : inputs) {
                         if (input.thumbPressed) {
                             float ypos = input.scrollThumb.getGlobalBounds().top + (mousePos.y - lastMousePos.y);
-                            set_thumb_pos(input, pad, ypos);
+                            setThumbPos(input, pad, ypos);
                             break;
                         }
                     }
@@ -769,7 +808,7 @@ int main() {
                                 if (input.cursor > 0) {
                                     input.cursor--;
                                     if (input.value[input.cursor] == '\n') {
-                                        set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - input.label.text.getCharacterSize());
+                                        setThumbPos(input, pad, input.scrollThumb.getGlobalBounds().top - input.label.text.getCharacterSize());
                                     }
                                 }
                             }
@@ -780,7 +819,7 @@ int main() {
                             if (input.hasFocus) {
                                 if (input.cursor < input.value.size()) {
                                     if (input.value[input.cursor] == '\n') {
-                                        set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + input.label.text.getCharacterSize());
+                                        setThumbPos(input, pad, input.scrollThumb.getGlobalBounds().top + input.label.text.getCharacterSize());
                                     }
                                     input.cursor++;
                                 }
@@ -808,7 +847,7 @@ int main() {
                                 if (input.cursor > index3) {
                                     input.cursor = index3;
                                 }
-                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top + input.label.text.getCharacterSize());
+                                setThumbPos(input, pad, input.scrollThumb.getGlobalBounds().top + input.label.text.getCharacterSize());
                             }
                         }
                     }
@@ -832,7 +871,7 @@ int main() {
                                     input.cursor = 0;
                                 }
 
-                                set_thumb_pos(input, pad, input.scrollThumb.getGlobalBounds().top - input.label.text.getCharacterSize());
+                                setThumbPos(input, pad, input.scrollThumb.getGlobalBounds().top - input.label.text.getCharacterSize());
                             }
                         }
                     }
@@ -841,7 +880,7 @@ int main() {
                             if (input.hasFocus) {
                                 std::string clipboard = sf::Clipboard::getString();
                                 if (selecting) {
-                                    delete_selected(input, selectedChars);
+                                    deleteSelected(input, selectedChars);
                                     selecting = false;
                                     charPressed = false;
                                 } else {
@@ -849,7 +888,7 @@ int main() {
                                     input.cursor += clipboard.size();
                                     input.label.text.setString(input.value);
                                 }
-                                set_thumb_values(input, pad);
+                                setThumbValues(input, pad);
                             }
                         }
                     }
@@ -857,7 +896,7 @@ int main() {
                         for (auto& input : inputs) {
                             if (input.hasFocus) {
                                 if (selecting) {
-                                    std::string selection = get_select(input, selectedChars);
+                                    std::string selection = getSelect(input, selectedChars);
                                     sf::Clipboard::setString(selection);
                                     std::cout << selection;
                                 }
@@ -919,7 +958,7 @@ int main() {
                             input.cursor++;
                         }
                         input.label.text.setString(input.value);
-                        set_thumb_values(input, pad);
+                        setThumbValues(input, pad);
                     }
                 }
             }
@@ -955,16 +994,16 @@ int main() {
                 instructions.setPosition(size.x / 2.0 - instructionsSize.width / 2.0, size.y / 2.0 - instructionsSize.height - 10);
                 instructionsSize = instructions.getGlobalBounds();
                 window.draw(instructions);
-                update_label_pos(texts[10], sf::Vector2f(instructions.getPosition().x, instructionsSize.top + instructionsSize.height + 10));
+                updateLabelPos(texts[10], sf::Vector2f(instructions.getPosition().x, instructionsSize.top + instructionsSize.height + 10));
                 auto textBox = texts[10].box.getGlobalBounds();
-                update_label_pos(texts[11], sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
+                updateLabelPos(texts[11], sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
                 if (selectingAlgorithm) {
                     checkBox->visible = true;
                     checkText->visible = true;
                     textBox = texts[11].box.getGlobalBounds();
-                    update_label_pos(*checkText, sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
+                    updateLabelPos(*checkText, sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
                     textBox = checkText->box.getGlobalBounds();
-                    update_label_pos(*checkBox, sf::Vector2f(textBox.left + textBox.width + 10, textBox.top + textBox.height / 2.0 - checkBox->box.getSize().y / 2.0));
+                    updateLabelPos(*checkBox, sf::Vector2f(textBox.left + textBox.width + 10, textBox.top + textBox.height / 2.0 - checkBox->box.getSize().y / 2.0));
                 }
             }
             if (toastElem->visible) {
@@ -990,7 +1029,7 @@ int main() {
                 auto containerBox = input.label.box.getGlobalBounds();
                 containerBox.height -= pad * 2.0f;
                 containerBox.width -= pad * 2.0f;
-                float sub = get_scroll_sub(input, pad);
+                float sub = getScrollSub(input, pad);
 
                 glEnable(GL_SCISSOR_TEST);
                 glScissor(
@@ -1003,10 +1042,10 @@ int main() {
                 if (selecting && input.hasFocus) {
                     if (selectedChars.y != -1) {
                         for (int k = selectedChars.x; k < selectedChars.y; k++) {
-                            draw_char_selection(input, window, k);
+                            drawCharSelection(input, window, k);
                         }
                         for (int k = selectedChars.x - 1; k > selectedChars.y - 2; k--) {
-                            draw_char_selection(input, window, k);
+                            drawCharSelection(input, window, k);
                         }
                     }
                 }
