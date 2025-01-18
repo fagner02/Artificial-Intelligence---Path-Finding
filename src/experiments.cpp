@@ -1,5 +1,7 @@
 #include <experiments.h>
 
+// experimento 1 - busca em largura vs Busca em profundidade vs Busca de custo uniforme(Dijkstra) 
+// entrada aleatória
 void experiment1(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
@@ -30,6 +32,8 @@ void experiment1(std::string output_file) {
     file.close();
 }
 
+// experimento 1 - busca em largura vs Busca em profundidade vs Busca de custo uniforme(Dijkstra) 
+// entrada do arquivo .txt
 void experiment1(
     std::vector<point> start_points,
     std::vector<point> target_points,
@@ -66,6 +70,8 @@ void experiment1(
     file.close();
 }
 
+// experimento 2 - busca de custo uniforme(Dijkstra) vs A*
+// entrada aleatória
 void experiment2(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
@@ -96,6 +102,8 @@ void experiment2(std::string output_file) {
     file.close();
 }
 
+// experimento 2 - busca de custo uniforme(Dijkstra) vs A*
+// entrada do arquivo .txt
 void experiment2(
     std::vector<point> start_points,
     std::vector<point> target_points,
@@ -133,6 +141,8 @@ void experiment2(
     file.close();
 }
 
+// experimento 3 - busca gulosa vs A*
+// entrada aleatória
 void experiment3(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
@@ -165,7 +175,8 @@ void experiment3(std::string output_file) {
     file.close();
 }
 
-
+// experimento 3 - busca gulosa vs A*
+// entrada do arquivo .txt
 void experiment3(
     std::vector<point> start_points,
     std::vector<point> target_points,
@@ -207,6 +218,8 @@ void experiment3(
     file.close();
 }
 
+// experimento 4 - busca em largura vs Busca em profundidade vs Busca em profundidade com randomização da vizinhança
+// entrada do arquivo aleatória
 void experiment4(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
@@ -239,6 +252,8 @@ void experiment4(std::string output_file) {
     file.close();
 }
 
+// experimento 4 - busca em largura vs Busca em profundidade vs Busca em profundidade com randomização da vizinhança
+// entrada do arquivo .txt
 void experiment4(
     std::vector<point> start_points,
     std::vector<point> target_points,
@@ -278,6 +293,8 @@ void experiment4(
     file.close();
 }
 
+// experimento 5 - caminho mínimo com uma parada a mais
+// entrada do arquivo aleatória
 void experiment5(std::string output_file) {
     block blocks[space_size][space_size];
     bool shouldDraw = false;
@@ -314,6 +331,8 @@ void experiment5(std::string output_file) {
     file.close();
 }
 
+// experimento 5 - caminho mínimo com uma parada a mais
+// entrada do arquivo .txt
 void experiment5(
     std::vector<point> start_points,
     std::vector<point> target_points,
