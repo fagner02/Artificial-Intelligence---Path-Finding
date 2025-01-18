@@ -442,7 +442,7 @@ int main() {
             }
             int count;
             file >> count;
-            std::cout << count << "\n";
+
             for (int i = 0;i < count;i++) {
                 start_points.push_back(point());
                 target_points.push_back(point());
