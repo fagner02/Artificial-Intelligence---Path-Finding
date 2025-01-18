@@ -499,7 +499,7 @@ std::vector<node*> greedy_search_cost(
 /// @param blocks parâmetro para animação
 /// @param shouldDraw parâmetro para animação 
 /// @param animate parâmetro para animação
-/// @return 
+/// @return std::string log da busca
 std::string greedy_search(
     point start,
     point target,
