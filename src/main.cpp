@@ -138,7 +138,6 @@ void update_label_pos(label_data& label, sf::Vector2f pos) {
     label.box.setPosition(pos);
     auto textSize = label.text.getGlobalBounds();
     label.text.setPosition(sf::Vector2f(pos.x + label.box.getSize().x / 2 - textSize.width / 2, pos.y + label.box.getSize().y / 2.0 - textSize.height + 5));
-
 }
 
 struct text_input {
@@ -277,6 +276,7 @@ int main() {
     bool loading = false;
     bool selectingExperiment = false;
     bool selectingAlgorithm = false;
+    bool shouldAnimate = false;
     int selectedAlgorithm = -1;
     int selectedExperiment = -1;
     sf::Vector2f selectedChars;
@@ -304,8 +304,8 @@ int main() {
     texts.push_back(create_label(font, pos, pad, "Experimento 5"));
 
     std::vector<text_input> inputs = {
-        {create_textbox(font, pos, pad, { 300, 40 }), "", "Nome do arquivo de entrada", false},
-        {create_textbox(font, pos, pad, { 300, 40 }), "", "Nome do arquivo de saida", false},
+        {create_textbox(font, pos, pad, { 300, 40 }), "input.txt", "Nome do arquivo de entrada", false},
+        {create_textbox(font, pos, pad, { 300, 40 }), "out.csv", "Nome do arquivo de saida", false},
     };
 
     set_thumb_values(inputs[0], pad, true);
@@ -317,10 +317,23 @@ int main() {
         sf::Color::White, sf::Color::White, 5, 0));
     texts.push_back(create_label(font, pos, pad, "", 20, sf::Color::White, sf::Color::White,
         sf::Color(80, 80, 80), sf::Color::Black, 0, 0));
+    texts.push_back(create_label(font, pos, pad, " ", 20, sf::Color::White, sf::Color::White,
+        sf::Color::White, sf::Color::White, 5, 0));
+    texts.push_back(create_label(font, pos, pad, "animar:", 20, sf::Color::White, sf::Color::White,
+        sf::Color(100, 100, 100), sf::Color::White, 5, 0));
 
+    auto inputFile = &inputs[0];
+    auto outputFile = &inputs[1];
     auto toastElem = &texts[12];
     toastElem->visible = false;
     std::wstring toastText = L"";
+
+    auto checkBox = &texts[13];
+    checkBox->box.setSize(sf::Vector2f(30, 30));
+    checkBox->visible = false;
+
+    auto checkText = &texts[14];
+    checkText->visible = false;
 
     auto setToastText = [&](std::wstring text) {
         std::thread(
@@ -356,51 +369,54 @@ int main() {
     point start = { 0, 0 };
     point target = { 0, 15 };
     std::set<point> constraints = { point{0, 20}, point{2, 22} };
-
+    auto selectAlgorithm = [&](int i) {
+        selectingAlgorithm = true;
+        selectingExperiment = false;
+        selectedAlgorithm = i;
+        };
+    auto selectExperiment = [&](int i) {
+        checkBox->visible = false;
+        checkText->visible = false;
+        selectingAlgorithm = false;
+        selectingExperiment = true;
+        selectedExperiment = i;
+        };
     std::vector<button> buttons = {
         {&texts[0], [&]() {
-            selectingAlgorithm = true;
-            selectedAlgorithm = 0;
+            selectAlgorithm(0);
          }},
         {&texts[1],[&]() {
-            selectingAlgorithm = true;
-            selectedAlgorithm = 1;
+            selectAlgorithm(1);
         } },
         {&texts[2],[&]() {
-           selectingAlgorithm = true;
-            selectedAlgorithm = 2;
+           selectAlgorithm(2);
         }},
         {&texts[3],[&]() {
-            selectingAlgorithm = true;
-            selectedAlgorithm = 3;
+            selectAlgorithm(3);
         }},
         {&texts[4],[&]() {
-            selectingAlgorithm = true;
-            selectedAlgorithm = 4;
+            selectAlgorithm(4);
         }},
         {&texts[5],[&]() {
-            selectingExperiment = true;
-            selectedExperiment = 0;
+            selectExperiment(0);
         }},
         {&texts[6],[&]() {
-            selectingExperiment = true;
-            selectedExperiment = 1;
+            selectExperiment(1);
         }},
         {&texts[7],[&]() {
-            selectingExperiment = true;
-            selectedExperiment = 2;
+            selectExperiment(2);
         }},
         {&texts[8],[&]() {
-            selectingExperiment = true;
-            selectedExperiment = 3;
+            selectExperiment(3);
         }},
         {&texts[9],[&]() {
-            selectingExperiment = true;
-            selectedExperiment = 4;
+            selectExperiment(4);
         }},
         {&texts[10], [&]() {
             texts[10].visible = false;
             texts[11].visible = false;
+            checkBox->visible = false;
+            checkText->visible = false;
 
             std::vector<point> start_points;
             std::vector<point> target_points;
@@ -442,28 +458,28 @@ int main() {
                 selectingExperiment = false;
 
                 std::thread(
-                    [start_points, target_points, count, constraints, &blocks, selectedAlgorithm, cost_ids, &shouldDraw]() {
+                    [start_points, target_points, count, constraints, orders, heuristic_ids, &blocks, selectedAlgorithm, cost_ids, &shouldDraw, shouldAnimate]() {
                         for (int i = 0; i < count;i++) {
                             fill_blocks(blocks, constraints[i], start_points[i], target_points[i]);
                             switch (selectedAlgorithm) {
                                 case 0: {
-                                    std::cout << dijkstra(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], true) << "\n";
+                                    std::cout << dijkstra(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], shouldAnimate) << "\n";
                                     break;
                                 }
                                 case 1: {
-                                    std::cout << bfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], { 0,1,2,3 }, true) << "\n";
+                                    std::cout << bfs(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], orders[i], shouldAnimate) << "\n";
                                     break;
                                 }
                                 case 2: {
-                                    std::cout << dfs(start_points[i], target_points[i], costs[cost_ids[i]], 0, constraints[i], blocks, std::ref(shouldDraw), { 0,1,2,3 }, true) << "\n";
+                                    std::cout << dfs(start_points[i], target_points[i], costs[cost_ids[i]], 0, constraints[i], blocks, std::ref(shouldDraw), orders[i], shouldAnimate) << "\n";
                                     break;
                                 }
                                 case 3: {
-                                    std::cout << greedy_search(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[0], cost_ids[i], 0, constraints[i], blocks, std::ref(shouldDraw), true) << "\n";
+                                    std::cout << greedy_search(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[heuristic_ids[i]], cost_ids[i], heuristic_ids[i], constraints[i], blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
                                     break;
                                 }
                                 case 4: {
-                                    std::cout << a_star(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[0], cost_ids[i], 0, constraints[i], blocks, std::ref(shouldDraw), true) << "\n";
+                                    std::cout << a_star(start_points[i], target_points[i], costs[cost_ids[i]], heuristic_fns[heuristic_ids[i]], cost_ids[i], heuristic_ids[i], constraints[i], blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
                                     break;
                                 }
                                 default:
@@ -509,11 +525,13 @@ int main() {
         { &texts[11],[&]() {
             texts[10].visible = false;
             texts[11].visible = false;
+            checkBox->visible = false;
+            checkText->visible = false;
             if (selectingAlgorithm) {
                 selectingAlgorithm = false;
                 selectingExperiment = false;
                 std::thread(
-                    [&blocks, &shouldDraw, selectedAlgorithm]() {
+                    [&blocks, &shouldDraw, selectedAlgorithm, shouldAnimate]() {
                         srand((unsigned)time(NULL));
                         point start = { rand() % 31, rand() % 31 };
                         point target = { rand() % 31, rand() % 31 };
@@ -521,26 +539,28 @@ int main() {
                         while (constraints.size() < 4) {
                             constraints.insert({ rand() % 31, rand() % 31 });
                         }
+                        int cost_id = rand() % 4;
+                        int heuristic_id = rand() % 2;
                         fill_blocks(blocks, constraints, start, target);
                         switch (selectedAlgorithm) {
                         case 0: {
-                            std::cout << dijkstra(start, target, costs[0], blocks, std::ref(shouldDraw), 0, constraints, true) << "\n";
+                            std::cout << dijkstra(start, target, costs[cost_id], blocks, std::ref(shouldDraw), cost_id, constraints, shouldAnimate) << "\n";
                             break;
                         }
                         case 1: {
-                            std::cout << bfs(start, target, costs[0], blocks, std::ref(shouldDraw), 0, constraints, { 0,1,2,3 }, true) << "\n";
+                            std::cout << bfs(start, target, costs[cost_id], blocks, std::ref(shouldDraw), cost_id, constraints, { 0,1,2,3 }, shouldAnimate) << "\n";
                             break;
                         }
                         case 2: {
-                            std::cout << dfs(start, target, costs[0], 0, constraints, blocks, std::ref(shouldDraw), { 0,1,2,3 }, true) << "\n";
+                            std::cout << dfs(start, target, costs[cost_id], cost_id, constraints, blocks, std::ref(shouldDraw), { 0,1,2,3 }, shouldAnimate) << "\n";
                             break;
                         }
                         case 3: {
-                            std::cout << greedy_search(start, target, costs[0], heuristic_fns[0], 0, 0, constraints, blocks, std::ref(shouldDraw), true) << "\n";
+                            std::cout << greedy_search(start, target, costs[cost_id], heuristic_fns[heuristic_id], cost_id, heuristic_id, constraints, blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
                             break;
                         }
                         case 4: {
-                            std::cout << a_star(start, target, costs[0], heuristic_fns[0], 0, 0, constraints, blocks, std::ref(shouldDraw), true) << "\n";
+                            std::cout << a_star(start, target, costs[cost_id], heuristic_fns[heuristic_id], cost_id, heuristic_id, constraints, blocks, std::ref(shouldDraw), shouldAnimate) << "\n";
                             break;
                         }
                         default:
@@ -583,6 +603,15 @@ int main() {
                     }
                 );
                 a1.detach();
+            }
+        } },
+        { checkBox, [&]() {
+            if (checkBox->text.getString() == " ") {
+                checkBox->text.setString("X");
+                shouldAnimate = true;
+            } else {
+                checkBox->text.setString(" ");
+                shouldAnimate = false;
             }
         } }
     };
@@ -662,11 +691,13 @@ int main() {
                             buttons[i]._label->box.setFillColor(sf::Color(200, 200, 200));
                         }
                     }
+                    bool anyInputFocused = false;
                     for (auto& input : inputs) {
                         if (input.label.box.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                             input.label.box.setOutlineColor(sf::Color(130, 130, 130));
                             input.hasFocus = true;
                             focused = true;
+                            anyInputFocused = true;
                             if (input.scrollThumb.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                                 thumbPressed = true;
                                 input.thumbPressed = true;
@@ -694,10 +725,12 @@ int main() {
                         } else {
                             input.label.box.setOutlineColor(sf::Color::White);
                             input.hasFocus = false;
-                            focused = false;
-                            selecting = false;
-                            charPressed = false;
                         }
+                    }
+                    if (!anyInputFocused) {
+                        focused = false;
+                        selecting = false;
+                        charPressed = false;
                     }
                 }
             }
@@ -900,7 +933,20 @@ int main() {
                 texts[11].visible = true;
                 sf::Text instructions;
                 instructions.setFont(font);
-                instructions.setString(L"Digite o nome dos arquivo ao lado.\nCaso não digite nada a predefinição é\nInput.txt e out.csv");
+                std::map<int, std::wstring> algorithms = {
+                    {0, L"Dijkstra"},
+                    {1, L"Bfs"},
+                    {2, L"Dfs"},
+                    {3, L"Greedy Search"},
+                    {4, L"A*"}
+                };
+                std::wstring title;
+                if (selectingAlgorithm) {
+                    title = L"Algoritmo " + algorithms[selectedAlgorithm];
+                } else {
+                    title = L"Experimento " + std::to_wstring(selectedExperiment + 1);
+                }
+                instructions.setString(title + L"\nDigite o nome dos arquivo ao lado.\nCaso não digite nada a predefinição é\nInput.txt e out.csv");
                 instructions.setCharacterSize(20);
                 instructions.setFillColor(sf::Color(10, 10, 10));
                 instructions.setOutlineColor(sf::Color(255, 255, 255));
@@ -912,6 +958,14 @@ int main() {
                 update_label_pos(texts[10], sf::Vector2f(instructions.getPosition().x, instructionsSize.top + instructionsSize.height + 10));
                 auto textBox = texts[10].box.getGlobalBounds();
                 update_label_pos(texts[11], sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
+                if (selectingAlgorithm) {
+                    checkBox->visible = true;
+                    checkText->visible = true;
+                    textBox = texts[11].box.getGlobalBounds();
+                    update_label_pos(*checkText, sf::Vector2f(instructions.getPosition().x, textBox.top + textBox.height + 10));
+                    textBox = checkText->box.getGlobalBounds();
+                    update_label_pos(*checkBox, sf::Vector2f(textBox.left + textBox.width + 10, textBox.top + textBox.height / 2.0 - checkBox->box.getSize().y / 2.0));
+                }
             }
             if (toastElem->visible) {
                 toastElem->text.setString(toastText);
@@ -946,7 +1000,7 @@ int main() {
                     containerBox.height
                 );
 
-                if (selecting) {
+                if (selecting && input.hasFocus) {
                     if (selectedChars.y != -1) {
                         for (int k = selectedChars.x; k < selectedChars.y; k++) {
                             draw_char_selection(input, window, k);
