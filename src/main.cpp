@@ -576,6 +576,17 @@ int main() {
                         }
                         int cost_id = rand() % 4;
                         int heuristic_id = rand() % 2;
+                        std::ofstream save("random_input.txt");
+                        save << "1\n";
+                        save << start.x << " " << start.y << "\n";
+                        save << target.x << " " << target.y << "\n";
+                        save << cost_id << "\n";
+                        save << heuristic_id << "\n";
+                        save << "0 1 2 3\n";
+                        save << constraints.size() << "\n";
+                        for (auto& c : constraints) {
+                            save << c.x << " " << c.y << "\n";
+                        }
                         fill_blocks(blocks, constraints, start, target);
                         std::ofstream out(output_file);
                         switch (selectedAlgorithm) {
