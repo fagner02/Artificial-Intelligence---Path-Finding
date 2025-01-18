@@ -1,5 +1,6 @@
 #include <node.h>
 
+// função para contar o número de nós em uma árvore
 int count_tree_nodes(node* root) {
     std::vector<node*> stack = { root }; // pilha para realizar a travessia da árvore
     int count = 0;
@@ -51,7 +52,7 @@ node* add_node(std::vector<node*>& tree_nodes, node* parent, point pos, std::set
     auto new_node = tree_nodes[tree_nodes.size() - 1]; // pega o ponteiro para o novo nó adicionado
     bool parentFoundGoal = parent == nullptr ? false : parent->data.found_goal; // verifica se o nó pai encontrou o objetivo
     new_node->data.found_goal = parentFoundGoal || satisfiesConstraint(new_node, constraints); // define se o novo nó encontrou o objetivo
-    
+
     // se o nó pai não for nulo, adiciona o novo nó como filho do pai
     if (parent != nullptr) {
         parent->children.push_back(new_node);

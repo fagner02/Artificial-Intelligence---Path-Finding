@@ -41,18 +41,18 @@ std::string dfs(
         visited_qty++; // incrementa o contador de nós visitados
 
         // explora as quatro direções possíveis a partir do nó atual
-        for (int i = 0; i < 4; i++) { 
+        for (int i = 0; i < 4; i++) {
             int dir = order[i]; // pega a direção atual 
-            point next = { current->pos + dirs[dir] }; // calcula a próxima ponto
+            point next = { current->pos + dirs[dir] }; // calcula o próximo ponto
 
-            // verifica se a próxima ponto está dentro do espaço de busca
+            // verifica se o próximo ponto está dentro do espaço de busca
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
-            // calcula o custo da próxima passo
+            // calcula o custo do próximo passo
             float costValue = current->data.cost + cost(dir, current->data.step + 1);
 
-            // verifica se a próxima ponto é o objetivo
+            // verifica se o próximo ponto é o objetivo
             if (isGoal(next, target, current, constraints)) {
                 std::cout << "Found target\n";
                 auto new_node = add_node(tree_nodes, current, next, {}, costValue, -1); // adiciona o nó do objetivo
@@ -65,14 +65,14 @@ std::string dfs(
                 return generate_log(start, target, visited_qty, count_tree_nodes(tree_nodes[0]), "dfs", cost_id, -1, new_node->data.cost, calculatePath(*new_node), order, constraints);
             }
 
-            // verifica se a próxima ponto já foi visitado
+            // verifica se o próximo ponto já foi visitado
             auto existent = std::find_if(visited.begin(), visited.end(),
                 [&](node* n) {
-                    return n->pos == next; 
+                    return n->pos == next;
                 }
             );
 
-            // verifica se a próxima ponto deve ser revisitado
+            // verifica se o próximo ponto deve ser revisitado
             if (existent == visited.end() || shouldRevisit((*existent), next, current, constraints)) {
                 if (existent != visited.end()) {
                     visited.erase(existent); // remove o nó da lista de visitados
@@ -86,7 +86,7 @@ std::string dfs(
                 // atualiza o bloco para animação
                 if (animate) {
                     set_block_data(blocks, *new_node);
-                    setBlockColors(blocks, shouldDraw, next); 
+                    setBlockColors(blocks, shouldDraw, next);
                 }
             }
         }
@@ -158,13 +158,13 @@ std::string a_star(
 
         // explora as quatro direções possíveis a partir do nó atual
         for (int i = 0; i < 4; i++) {
-            point next = { current->pos + dirs[i] }; // calcula a próxima ponto
-            // verifica se a próxima ponto está dentro do espaço de busca
+            point next = { current->pos + dirs[i] }; // calcula o próximo ponto
+            // verifica se o próximo ponto está dentro do espaço de busca
             if (next.x < 0 || next.x >= space_size || next.y < 0 || next.y >= space_size) {
                 continue;
             }
 
-            // verifica se a próxima ponto já foi visitada
+            // verifica se o próximo ponto já foi visitada
             auto visited_node = find_if(visited.begin(), visited.end(), [&](node* a) {return a->pos == next;});
             if (visited_node != visited.end()) {
                 // decide se deve revisitar o nó já visitado
@@ -174,10 +174,10 @@ std::string a_star(
                     continue;
                 }
             }
-            // calcula o custo da próxima passo
+            // calcula o custo do próximo passo
             float new_cost = current->data.cost + cost(i, current->data.step + 1);
 
-            // verifica se a próxima ponto está na lista de abertos
+            // verifica se o próximo ponto está na lista de abertos
             auto found = find_if(open.begin(), open.end(),
                 [&](node* n) {
                     return n->pos == next;
@@ -194,7 +194,7 @@ std::string a_star(
                     open.erase(found); // remove o nó existente da lista de abertos
                 }
                 open.push_back(next_node); // adiciona o novo nó à lista de abertos
-                
+
                 if (animate) {
                     set_block_data(blocks, *next_node);
                     setBlockColors(blocks, shouldDraw, next);
@@ -284,7 +284,7 @@ std::string bfs(
                 std::cout << "Found target\n" << current->data.cost + 1 << "\n";
 
                 node* new_node = add_node(tree_nodes, current, next, {}, costValue, -1); // adiciona o nó à árvore 
-                if (animate) { 
+                if (animate) {
                     set_block_data(blocks, *new_node);
                     animatePath(*new_node, blocks, shouldDraw);
                 }
@@ -294,9 +294,9 @@ std::string bfs(
             }
 
             // verifica se o próximo ponto já foi visitado
-            auto existent = std::find_if(visited.begin(), visited.end(), 
+            auto existent = std::find_if(visited.begin(), visited.end(),
                 [&](node* n) {
-                    return n->pos == next; 
+                    return n->pos == next;
                 }
             );
 
@@ -402,7 +402,7 @@ std::string dijkstra(
                 visited.push_back(next_node); // adiciona nó à lista de visitados
 
                 // atualiza o bloco para animação
-                if (animate) { 
+                if (animate) {
                     set_block_data(blocks, *next_node);
                     setBlockColors(blocks, shouldDraw, next);
                 }
@@ -483,7 +483,7 @@ std::string greedy_search(
     if (animate) set_block_data(blocks, *tree_nodes[0]); // configura o bloco para animação
 
     // lista de nós visitados e nós abertos
-    std::vector<node*> visited{ tree_nodes[0] }; 
+    std::vector<node*> visited{ tree_nodes[0] };
     std::vector<node*> open;
 
     int visited_qty = 0; // contador de nós visitados
@@ -491,7 +491,7 @@ std::string greedy_search(
     open.push_back(tree_nodes[0]); // adiciona o nó inicial à lista de nós abertos
 
     while (!open.empty()) { // loop até que a lista de nós abertos esteja vazia
-        auto min_it = min_element(open.begin(), open.end(), 
+        auto min_it = min_element(open.begin(), open.end(),
             [&](node* a, node* b) {
                 return a->data.heuristic < b->data.heuristic;
             }
@@ -541,10 +541,9 @@ std::string greedy_search(
                     continue;
                 }
             }
-            
+
             // adiciona o novo nó à árvore de busca e à lista de visitados
             auto new_node = add_node(tree_nodes, current, next, constraints, 0, heuristic(next, target));
-
             open.push_back(new_node);
             visited.push_back(new_node);
 
