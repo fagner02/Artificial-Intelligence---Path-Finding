@@ -1,124 +1,6 @@
 
 #include <path_finding.h>
 
-std::string generate_log(
-    point start,
-    point target,
-    int visited_qty,
-    int generated_qty,
-    std::string algorithm,
-    int cost_id,
-    int heuristic_id,
-    float cost,
-    std::vector<node> path,
-    std::vector<int> order = { 0, 1, 2, 3 },
-    std::set<point> constraints
-) {
-    std::stringstream ss;
-    ss << algorithm << "," << visited_qty << "," << generated_qty << "," << path.size() << ",";
-    if (path.size() == 0) {
-        ss << "null,";
-    } else {
-        ss << "[";
-        for (auto p : path) {
-            ss << "[" << p.pos.x << " " << p.pos.y << "]";
-        }
-        ss << "],";
-    }
-
-    ss << "[" << start.x << " " << start.y << "], [" << target.x << " " << target.y << "],";
-    ss << cost_id << "," << heuristic_id << ",";
-
-    if (cost == -1) {
-        ss << "null,";
-    } else {
-        ss << cost << ",";
-    }
-
-    ss << "[" << order[0];
-    for (int i = 1; i < 4; i++) {
-        ss << " " << order[i];
-    }
-    ss << "],";
-    ss << "[";
-    for (auto& p : constraints) {
-        ss << "[" << p.x << " " << p.y << "] ";
-    }
-    ss << "]";
-    return ss.str();
-}
-
-bool satisfiesConstraint(node* n, std::set<point> constraints) {
-    return constraints.size() == 0 || (n->data.found_goal || constraints.find(n->pos) != constraints.end());
-}
-
-bool satisfiesConstraint(point n, node* parent, std::set<point> constraints) {
-    bool parentFoundGoal = parent == nullptr ? false : parent->data.found_goal;
-    return constraints.size() == 0 || (parentFoundGoal || constraints.find(n) != constraints.end());
-}
-
-bool shouldRevisit(node* old, point new_node, node* parent, std::set<point> constraints) {
-    return !satisfiesConstraint(old, constraints) && satisfiesConstraint(new_node, parent, constraints);
-}
-
-bool shouldRevisit(node* old, node* new_node, std::set<point> constraints) {
-    return !satisfiesConstraint(old, constraints) && satisfiesConstraint(new_node, constraints);
-}
-
-bool isGoal(node* n, point target, std::set<point> constraints) {
-    return (n->pos == target) && satisfiesConstraint(n, constraints);
-}
-
-bool isGoal(point n, point target, node* parent, std::set<point> constraints) {
-    return (n == target) && satisfiesConstraint(n, parent, constraints);
-}
-
-node* add_node(std::vector<node*>& tree_nodes, node* parent, point pos, std::set<point> constraints, float cost, float heuristic) {
-    tree_nodes.push_back(
-        new node{
-            visited_info{
-                cost,
-                heuristic,
-                parent == nullptr ? 0 : parent->data.step + 1,
-                parent
-            },
-            {},
-            parent,
-            pos
-        }
-    );
-    auto new_node = tree_nodes[tree_nodes.size() - 1];
-    bool parentFoundGoal = parent == nullptr ? false : parent->data.found_goal;
-    new_node->data.found_goal = parentFoundGoal || satisfiesConstraint(new_node, constraints);
-    if (parent != nullptr) {
-        parent->children.push_back(new_node);
-    }
-    return new_node;
-}
-
-void set_block_data(block blocks[space_size][space_size], node n) {
-    blocks[n.pos.x][n.pos.y].info.cost = n.data.cost;
-    blocks[n.pos.x][n.pos.y].info.heuristic = n.data.heuristic;
-    blocks[n.pos.x][n.pos.y].info.step = n.data.step;
-    blocks[n.pos.x][n.pos.y].info.from = n.data.from;
-}
-
-int count_tree_nodes(node* root) {
-    std::vector<node*> stack = { root };
-    int count = 0;
-
-    while (!stack.empty()) {
-        node* current = stack.back();
-        stack.pop_back();
-        count++;
-
-        for (node* child : current->children) {
-            stack.push_back(child);
-        }
-    }
-    return count;
-}
-
 std::string dfs(
     point start,
     point target,
@@ -194,21 +76,6 @@ std::string dfs(
     if (animate) animatePath(*tree_nodes[tree_nodes.size() - 1], blocks, shouldDraw);
 
     return generate_log(start, target, visited_qty, count_tree_nodes(tree_nodes[0]), "dfs", cost_id, -1, -1, calculatePath(*tree_nodes[tree_nodes.size() - 1]), order);
-}
-
-void print_tree(node* root, int level = 0) {
-    if (root == nullptr) {
-        return;
-    }
-
-    for (int i = 0; i < level; ++i) {
-        std::cout << "|   ";
-    }
-
-    std::cout << "Node: (" << root->pos.x << ", " << root->pos.y << ")\n";
-    for (node* child : root->children) {
-        print_tree(child, level + 1);
-    }
 }
 
 std::string a_star(
@@ -450,13 +317,6 @@ std::string dijkstra(point start,
     }
 
     return generate_log(start, target, visited_qty, count_tree_nodes(tree_nodes[0]), "dijkstra", cost_id, -1, -1, {});
-}
-
-void animate_greedy_search_cost(std::vector<node*> path, block blocks[space_size][space_size], bool& shouldDraw) {
-    for (auto it = path.begin(); it != path.end(); it++) {
-        set_block_data(blocks, *(*it));
-        setBlockColors(blocks, shouldDraw, (*it)->pos);
-    }
 }
 
 std::vector<node*> greedy_search_cost(

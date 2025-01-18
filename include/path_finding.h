@@ -5,24 +5,11 @@
 #include <constants.h>
 #include <print.h>
 #include <heuristics.h>
+#include <goal_test.h>
 #include <queue>
 #include <set>
 
 #pragma once
-
-std::string generate_log(
-    point start,
-    point target,
-    int visited_qty,
-    int generated_qty,
-    std::string algorithm,
-    int cost_id,
-    int heuristic_id,
-    float cost,
-    std::vector<node> path,
-    std::vector<int> order,
-    std::set<point> constraints = {}
-);
 
 std::string dfs(
     point start,

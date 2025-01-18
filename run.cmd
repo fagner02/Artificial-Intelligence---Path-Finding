@@ -11,6 +11,9 @@ src\heuristics.cpp ^
 src\experiments.cpp ^
 src\main.cpp ^
 src\rectshape.cpp ^
+src\point.cpp ^
+src\goal_test.cpp ^
+src\node.cpp ^
 -lsfml-graphics ^
 -lsfml-window ^
 -lsfml-system ^

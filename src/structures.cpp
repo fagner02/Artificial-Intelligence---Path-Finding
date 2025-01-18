@@ -1,25 +1,5 @@
 #include <structures.h>
 
-bool operator==(const point& lhs, const point& rhs) {
-    return lhs.x == rhs.x && lhs.y == rhs.y;
-}
-
-point operator+(const point& lhs, const point& rhs) {
-    return { lhs.x + rhs.x , lhs.y + rhs.y };
-}
-
-point operator-(const point& lhs, const point& rhs) {
-    return { lhs.x - rhs.x , lhs.y - rhs.y };
-}
-
-bool operator!=(const point& lhs, const point& rhs) {
-    return lhs.x != rhs.x || lhs.y != rhs.y;
-}
-
-bool operator<(const point& lhs, const point& rhs) {
-    return lhs.x < rhs.x || (lhs.x == rhs.x && lhs.y < rhs.y);
-}
-
 void fill_blocks(
     block blocks[space_size][space_size],
     std::set<point> constraints,
@@ -44,4 +24,11 @@ void fill_blocks(
             }
         }
     }
+}
+
+void set_block_data(block blocks[space_size][space_size], node n) {
+    blocks[n.pos.x][n.pos.y].info.cost = n.data.cost;
+    blocks[n.pos.x][n.pos.y].info.heuristic = n.data.heuristic;
+    blocks[n.pos.x][n.pos.y].info.step = n.data.step;
+    blocks[n.pos.x][n.pos.y].info.from = n.data.from;
 }

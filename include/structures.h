@@ -3,35 +3,9 @@
 #include <functional>
 #include <constants.h>
 #include <set>
+#include <node.h>
 
 #pragma once
-
-struct point {
-    int x, y;
-};
-
-point operator+(const point& lhs, const point& rhs);
-
-point operator-(const point& lhs, const point& rhs);
-
-bool operator==(const point& lhs, const point& rhs);
-
-bool operator!=(const point& lhs, const point& rhs);
-
-bool operator<(const point& lhs, const point& rhs);
-
-struct node;
-
-struct visited_info {
-    float cost;
-    float heuristic;
-    int step;
-    node* from;
-    bool found_goal = false;
-    std::string label = "";
-    bool visited = false;
-    bool is_path = false;
-};
 
 struct block {
     sf::RoundedRectangleShape shape;
@@ -40,6 +14,8 @@ struct block {
 };
 
 void fill_blocks(block blocks[space_size][space_size], std::set<point> constraints = {}, point start = { -1,-1 }, point target = { -1,-1 });
+
+void set_block_data(block blocks[space_size][space_size], node n);
 
 struct label_data {
     sf::Text text;
@@ -51,13 +27,6 @@ struct button {
     label_data* _label;
     std::function<void()> fn;
     bool pressed = false;
-};
-
-struct node {
-    visited_info data;
-    std::vector<node*> children;
-    node* parent;
-    point pos;
 };
 
 const point dirs[] = {

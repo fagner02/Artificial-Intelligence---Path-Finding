@@ -90,3 +90,56 @@ void  setBlockColors(
 
 }
 
+std::string generate_log(
+    point start,
+    point target,
+    int visited_qty,
+    int generated_qty,
+    std::string algorithm,
+    int cost_id,
+    int heuristic_id,
+    float cost,
+    std::vector<node> path,
+    std::vector<int> order,
+    std::set<point> constraints
+) {
+    std::stringstream ss;
+    ss << algorithm << "," << visited_qty << "," << generated_qty << "," << path.size() << ",";
+    if (path.size() == 0) {
+        ss << "null,";
+    } else {
+        ss << "[";
+        for (auto p : path) {
+            ss << "[" << p.pos.x << " " << p.pos.y << "]";
+        }
+        ss << "],";
+    }
+
+    ss << "[" << start.x << " " << start.y << "], [" << target.x << " " << target.y << "],";
+    ss << cost_id << "," << heuristic_id << ",";
+
+    if (cost == -1) {
+        ss << "null,";
+    } else {
+        ss << cost << ",";
+    }
+
+    ss << "[" << order[0];
+    for (int i = 1; i < 4; i++) {
+        ss << " " << order[i];
+    }
+    ss << "],";
+    ss << "[";
+    for (auto& p : constraints) {
+        ss << "[" << p.x << " " << p.y << "] ";
+    }
+    ss << "]";
+    return ss.str();
+}
+
+void animate_greedy_search_cost(std::vector<node*> path, block blocks[space_size][space_size], bool& shouldDraw) {
+    for (auto it = path.begin(); it != path.end(); it++) {
+        set_block_data(blocks, *(*it));
+        setBlockColors(blocks, shouldDraw, (*it)->pos);
+    }
+}
