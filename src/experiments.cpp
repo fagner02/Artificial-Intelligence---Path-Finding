@@ -10,7 +10,8 @@ void experiment1(std::string output_file) {
         return;
     }
     file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
-
+    std::ofstream out("experiment1_random_input.txt");
+    out << "50\n";
     srand((unsigned)time(NULL));
 
     for (int i = 0; i < 50; i++) {
@@ -18,6 +19,12 @@ void experiment1(std::string output_file) {
         point target = { rand() % 31, rand() % 31 };
 
         for (int j = 0; j < 4; j++) {
+            out << start.x << " " << start.y << "\n";
+            out << target.x << " " << target.y << "\n";
+            out << j << "\n";
+            out << "-1\n";
+            out << "0 1 2 3\n";
+            out << "0\n";
             auto cost = costs[j];
             fill_blocks(blocks);
             file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
@@ -27,6 +34,7 @@ void experiment1(std::string output_file) {
             file << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw)) << "\n";
         }
     }
+    out.close();
     file.close();
 }
 
@@ -49,6 +57,7 @@ void experiment1(
         return;
     }
     file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
+
     for (int i = 0; i < 50; i++) {
         point start = start_points[i];
         point target = target_points[i];
@@ -75,15 +84,23 @@ void experiment2(std::string output_file) {
         std::cout << "Erro ao abrir o arquivo log.csv\n";
         return;
     }
+    std::ofstream out("experiment2_random_input.txt");
     file << "algorithm,visited_qty,generated_qty,path_size,path,start,target,cost_id,heuristic_id,cost,order,pharmacies\n";
 
     srand((unsigned)time(NULL));
 
+    out << "50\n";
     for (int i = 0; i < 50; i++) {
         point start = { rand() % 31, rand() % 31 };
         point target = { rand() % 31, rand() % 31 };
 
         for (int j = 0; j < 4; j++) {
+            out << start.x << " " << start.y << "\n";
+            out << target.x << " " << target.y << "\n";
+            out << j << "\n";
+            out << "-1\n";
+            out << "0 1 2 3\n";
+            out << "0\n";
             auto cost = costs[j];
             fill_blocks(blocks);
             file << dijkstra(start, target, cost, blocks, std::ref(shouldDraw), j, {}) << "\n";
@@ -93,6 +110,7 @@ void experiment2(std::string output_file) {
             }
         }
     }
+    out.close();
     file.close();
 }
 
@@ -147,6 +165,9 @@ void experiment3(std::string output_file) {
 
     srand((unsigned)time(NULL));
 
+    std::ofstream out("experiment3_random_input.txt");
+    out << "50\n";
+
     for (int i = 0; i < 50; i++) {
         point start = { rand() % 31, rand() % 31 };
         point target = { rand() % 31, rand() % 31 };
@@ -155,6 +176,12 @@ void experiment3(std::string output_file) {
             auto cost = costs[j];
 
             for (int k = 0; k < 2; k++) {
+                out << start.x << " " << start.y << "\n";
+                out << target.x << " " << target.y << "\n";
+                out << j << "\n";
+                out << k << "\n";
+                out << "0 1 2 3\n";
+                out << "0\n";
                 fill_blocks(blocks);
                 file << greedy_search(start, target, cost, heuristic_fns[k], j, k, {}, blocks, std::ref(shouldDraw)) << "\n";
                 fill_blocks(blocks);
@@ -162,6 +189,7 @@ void experiment3(std::string output_file) {
             }
         }
     }
+    out.close();
     file.close();
 }
 
@@ -221,6 +249,8 @@ void experiment4(std::string output_file) {
 
     srand((unsigned)time(NULL));
 
+    std::ofstream out("experiment4_random_input.txt");
+    out << "20\n";
     for (int i = 0; i < 20; i++) {
         point start = { rand() % 31, rand() % 31 };
         point target = { rand() % 31, rand() % 31 };
@@ -228,6 +258,15 @@ void experiment4(std::string output_file) {
         std::vector<int> order = { 0, 1, 2, 3 };
         std::random_shuffle(order.begin(), order.end());
         for (int j = 0; j < 4; j++) {
+            out << start.x << " " << start.y << "\n";
+            out << target.x << " " << target.y << "\n";
+            out << j << "\n";
+            out << "-1\n";
+            for (int k = 0; k < 4; k++) {
+                out << order[k] << (k == 3 ? "" : " ");
+            }
+            out << "\n";
+            out << "0\n";
             auto cost = costs[j];
 
             fill_blocks(blocks);
@@ -236,6 +275,7 @@ void experiment4(std::string output_file) {
             file << dfs(start, target, cost, j, {}, blocks, std::ref(shouldDraw), order) << "\n";
         }
     }
+    out.close();
     file.close();
 }
 
@@ -292,6 +332,9 @@ void experiment5(std::string output_file) {
 
     srand((unsigned)time(NULL));
 
+    std::ofstream out("experiment5_random_input.txt");
+    out << "25\n";
+
     for (int i = 0; i < 25; i++) {
         point start = { rand() % 31, rand() % 31 };
         point target = { rand() % 31, rand() % 31 };
@@ -304,13 +347,27 @@ void experiment5(std::string output_file) {
         }
 
         for (int j = 0; j < 4; j++) {
+
             auto cost = costs[j];
             for (int k = 0; k < 2;k++) {
+                out << start.x << " " << start.y << "\n";
+                out << target.x << " " << target.y << "\n";
+                out << j << "\n";
+                out << k << "\n";
+                for (int l = 0; l < 4; l++) {
+                    out << order[l] << (l == 3 ? "" : " ");
+                }
+                out << "\n";
+                out << constraints.size() << "\n";
+                for (auto& c : constraints) {
+                    out << " " << c.x << " " << c.y << "\n";
+                }
                 fill_blocks(blocks);
                 file << a_star(start, target, cost, heuristic_fns[k], j, k, constraints, blocks, std::ref(shouldDraw)) << "\n";
             }
         }
     }
+    out.close();
     file.close();
 }
 
