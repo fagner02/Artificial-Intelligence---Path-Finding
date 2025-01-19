@@ -53,7 +53,7 @@ void draw(
             blocks[x][y].text.setString(ss.str());
 
             auto textSize = blocks[x][y].text.getLocalBounds();
-
+            blocks[x][y].text.setOrigin(textSize.getPosition());
             blocks[x][y].text.setPosition(
                 (pos.x + (t.width * scale.x) / 2.0 - (textSize.width * scale.x) / 2.0),
                 (pos.y + (t.height * scale.y) / 2.0 - (textSize.height * scale.y) / 2.0)
@@ -89,9 +89,10 @@ auto createLabel(
     label.text.setFillColor(textColor);
     label.text.setOutlineColor(textOutColor);
     label.text.setOutlineThickness(textOutlineThickness);
+    label.text.setOrigin(label.text.getLocalBounds().getPosition());
     auto textSize = label.text.getGlobalBounds();
 
-    auto boxSize = sf::Vector2f(textSize.width + pad * 2.0, textSize.height - 5.0 + pad * 2.0);
+    auto boxSize = sf::Vector2f(textSize.width + pad * 2.0, textSize.height + pad * 2.0);
 
     label.box = sf::RoundedRectangleShape(boxSize, 10, 20);
     label.box.setFillColor(boxColor);
@@ -99,7 +100,7 @@ auto createLabel(
     label.box.setOutlineColor(outColor);
     label.box.setOutlineThickness(outlineThickness);
 
-    label.text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2.0 - textSize.width / 2.0, pos.y + boxSize.y / 2.0 - textSize.height + 5.0));
+    label.text.setPosition(sf::Vector2f(pos.x + boxSize.x / 2.0 - textSize.width / 2.0, pos.y + boxSize.y / 2.0 - textSize.height / 2.0));
     pos.y += boxSize.y + 5;
     return label;
 }
@@ -119,6 +120,7 @@ auto createTextbox(
     label.text = (sf::Text());
     label.text.setFont(font);
     label.text.setCharacterSize(charSize);
+    label.text.setOrigin(label.text.getLocalBounds().getPosition());
     auto textSize = label.text.getGlobalBounds();
     textSize.height *= 1;
 
@@ -128,7 +130,7 @@ auto createTextbox(
     label.box.setOutlineColor(sf::Color(255, 255, 255));
     label.box.setOutlineThickness(2);
 
-    label.text.setPosition(sf::Vector2f(pos.x + pad - textSize.width / 2, pos.y + pad - textSize.height + 5));
+    label.text.setPosition(sf::Vector2f(pos.x + pad - textSize.width / 2, pos.y + pad - textSize.height / 2));
 
     pos.y += size.y + 5;
     return label;
@@ -136,8 +138,9 @@ auto createTextbox(
 
 void updateLabelPos(label_data& label, sf::Vector2f pos) {
     label.box.setPosition(pos);
-    auto textSize = label.text.getGlobalBounds();
-    label.text.setPosition(sf::Vector2f(pos.x + label.box.getSize().x / 2 - textSize.width / 2, pos.y + label.box.getSize().y / 2.0 - textSize.height + 5));
+    auto textSize = label.text.getLocalBounds();
+    label.text.setOrigin(textSize.getPosition());
+    label.text.setPosition(sf::Vector2f(pos.x + label.box.getSize().x / 2 - textSize.width / 2, pos.y + label.box.getSize().y / 2.0 - textSize.height / 2.0));
 }
 
 struct text_input {
@@ -350,6 +353,7 @@ int main() {
             [&toastText, text, &toastElem, &shouldDraw]() {
                 toastElem->visible = true;
                 toastText = text;
+                shouldDraw = true;
                 auto color = toastElem->box.getFillColor();
                 auto textColor = toastElem->text.getFillColor();
                 std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -374,7 +378,6 @@ int main() {
 
     texts[10].visible = false;
     texts[11].visible = false;
-
 
     point start = { 0, 0 };
     point target = { 0, 15 };
@@ -658,6 +661,7 @@ int main() {
         { checkBox, [&]() {
             if (checkBox->text.getString() == " ") {
                 checkBox->text.setString("X");
+                updateLabelPos(*checkBox, checkBox->box.getPosition());
                 shouldAnimate = true;
             } else {
                 checkBox->text.setString(" ");
@@ -811,7 +815,6 @@ int main() {
                     }
                 }
             }
-
             if (event.type == sf::Event::KeyPressed && !loading) {
                 if (focused) {
                     if (event.key.code == sf::Keyboard::Left) {
@@ -1018,7 +1021,8 @@ int main() {
                 instructions.setFillColor(sf::Color(10, 10, 10));
                 instructions.setOutlineColor(sf::Color(255, 255, 255));
                 instructions.setOutlineThickness(5);
-                auto instructionsSize = instructions.getGlobalBounds();
+                auto instructionsSize = instructions.getLocalBounds();
+                instructions.setOrigin(instructionsSize.left, instructionsSize.top);
                 instructions.setPosition(size.x / 2.0 - instructionsSize.width / 2.0, size.y / 2.0 - instructionsSize.height - 10);
                 instructionsSize = instructions.getGlobalBounds();
                 window.draw(instructions);
@@ -1036,7 +1040,8 @@ int main() {
             }
             if (toastElem->visible) {
                 toastElem->text.setString(toastText);
-                auto textSize = toastElem->text.getGlobalBounds();
+                auto textSize = toastElem->text.getLocalBounds();
+                toastElem->text.setOrigin(textSize.left, textSize.top);
                 toastElem->box.setSize(sf::Vector2f(textSize.width + pad * 2.0, textSize.height - 5.0 + pad * 2.0));
                 toastElem->box.setPosition(size.x / 2.0 - toastElem->box.getSize().x / 2.0, 20);
                 toastElem->text.setPosition(size.x / 2.0 - textSize.width / 2.0, 20 + pad);
