@@ -35,6 +35,7 @@ void print_tree(node* root, int level) {
     }
 }
 
+// função para adicionar um novo nó à árvore
 node* add_node(std::vector<node*>& tree_nodes, node* parent, point pos, std::set<point> constraints, float cost, float heuristic) {
     tree_nodes.push_back( // cria um novo nó e adiciona ele ao vetor de nós da árvore
         new node{

@@ -224,7 +224,7 @@ void deleteSelected(text_input& input, sf::Vector2f selectedChars) {
 
 std::string getSelect(text_input& input, sf::Vector2f selectedChars) {
     if (selectedChars.x > selectedChars.y) {
-        return input.value.substr(selectedChars.y, selectedChars.x - selectedChars.y);
+        return input.value.substr(selectedChars.y - 1, selectedChars.x - selectedChars.y + 1);
     } else {
         return input.value.substr(selectedChars.x, selectedChars.y - selectedChars.x);
     }
@@ -811,6 +811,7 @@ int main() {
                     }
                 }
             }
+
             if (event.type == sf::Event::KeyPressed && !loading) {
                 if (focused) {
                     if (event.key.code == sf::Keyboard::Left) {
@@ -889,16 +890,18 @@ int main() {
                     if (event.key.code == sf::Keyboard::V && event.key.control) {
                         for (auto& input : inputs) {
                             if (input.hasFocus) {
-                                std::string clipboard = sf::Clipboard::getString();
                                 if (selecting) {
                                     deleteSelected(input, selectedChars);
+                                    input.label.text.setString(input.value);
                                     selecting = false;
                                     charPressed = false;
-                                } else {
-                                    input.value.insert(input.value.begin() + input.cursor, clipboard.begin(), clipboard.end());
-                                    input.cursor += clipboard.size();
-                                    input.label.text.setString(input.value);
                                 }
+                                std::string clipboard = sf::Clipboard::getString().toAnsiString();
+                                std::cout << clipboard;
+                                input.value.insert(input.value.begin() + input.cursor, clipboard.begin(), clipboard.end());
+                                input.cursor += clipboard.size();
+                                input.label.text.setString(input.value);
+
                                 setThumbValues(input, pad);
                             }
                         }
@@ -914,7 +917,30 @@ int main() {
                             }
                         }
                     }
-
+                    if (event.key.code == sf::Keyboard::X && event.key.control) {
+                        for (auto& input : inputs) {
+                            if (input.hasFocus) {
+                                if (selecting) {
+                                    std::string selection = getSelect(input, selectedChars);
+                                    sf::Clipboard::setString(selection);
+                                    deleteSelected(input, selectedChars);
+                                    input.label.text.setString(input.value);
+                                    selecting = false;
+                                    charPressed = false;
+                                }
+                            }
+                        }
+                    }
+                    if (event.key.code == sf::Keyboard::A && event.key.control) {
+                        for (auto& input : inputs) {
+                            if (input.hasFocus) {
+                                selectedChars.x = 0;
+                                selectedChars.y = input.value.size();
+                                selecting = true;
+                                charPressed = true;
+                            }
+                        }
+                    }
                 } else {
                     if (event.key.code == sf::Keyboard::Equal) {
                         scale.x += 0.01;
@@ -948,23 +974,14 @@ int main() {
                             }
                         } else if (event.text.unicode == 8) {
                             if (selecting) {
-                                if (selectedChars.y > selectedChars.x) {
-                                    input.value.erase(input.value.begin() + selectedChars.x, input.value.begin() + selectedChars.y);
-                                    input.cursor = selectedChars.x;
-                                } else {
-                                    input.value.erase(input.value.begin() + selectedChars.y - 1, input.value.begin() + selectedChars.x);
-                                    input.cursor = selectedChars.y - 1;
-                                    if (selectedChars.y - 1 > input.value.size()) {
-                                        input.cursor = input.value.size();
-                                    }
-                                }
+                                deleteSelected(input, selectedChars);
                                 selecting = false;
                                 charPressed = false;
                             } else if (input.cursor > 0) {
                                 input.value.erase(input.value.begin() + input.cursor - 1);
                                 input.cursor--;
                             }
-                        } else {
+                        } else if (event.text.unicode > 31) {
                             input.value.insert(input.value.begin() + input.cursor, static_cast<char>(event.text.unicode));
                             input.cursor++;
                         }

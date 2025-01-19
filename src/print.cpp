@@ -15,13 +15,8 @@ void printPath(std::vector<point>& path, block visited[space_size][space_size]) 
         std::cout << "\n";
     }
 }
+
 /// @brief imprime a grade de blocos no terminal
-/// a função limpa a tela e exibe a grade, colorindo os diferentes tipos de blocos, como:
-///    o ponto de destino é mostrado com a letra "T".
-///    o próximo ponto é destacado com a letra "X" em azul.
-///    o ponto anterior é destacado com a letra "P" em vermelho.
-///    os blocos com custo não calculado são exibidos com o valor "-1".
-///    os blocos visitados e com custo calculado são exibidos em verde.
 /// @param target ponto de destino
 /// @param next próximo ponto a ser visitado
 /// @param prev ponto anterior
@@ -103,8 +98,6 @@ void  setBlockColors(
 }
 
 /// @brief gera um log contendo informações sobre a execução do algoritmo de busca
-/// a função cria uma string que descreve o desempenho do algoritmo, incluindo o número de nós visitados,
-/// gerados, o caminho encontrado, o custo final e outros parâmetros de execução.
 /// @param start ponto inicial da busca
 /// @param target ponto final da busca
 /// @param visited_qty quantidade de nós visitados durante a busca
