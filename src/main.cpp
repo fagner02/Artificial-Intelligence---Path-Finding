@@ -590,6 +590,7 @@ int main() {
                         for (auto& c : constraints) {
                             save << c.x << " " << c.y << "\n";
                         }
+                        save.close();
                         fill_blocks(blocks, constraints, start, target);
                         std::ofstream out(output_file);
                         switch (selectedAlgorithm) {
