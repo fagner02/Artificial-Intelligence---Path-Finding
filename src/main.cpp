@@ -1,3 +1,4 @@
+
 #include <constants.h>
 #include <costs.h>
 #include <print.h>
@@ -20,7 +21,6 @@
 #include <vector>
 #include <fstream>
 #include <experiments.h>
-#include <json/json.h>
 #include <GL/gl.h>
 #include <set>
 
