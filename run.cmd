@@ -1,5 +1,5 @@
 del main.exe
-g++ -std=c++17 -mwindows -static -static-libgcc -static-libstdc++ -pthread -Wl,-Bstatic -DSFML_STATIC -LC:\msys64\mingw32\lib -I.\include -IC:\msys64\mingw32\include ^
+g++ -std=c++17 -static -static-libgcc -static-libstdc++ -pthread -Wl,-Bstatic -DSFML_STATIC -LC:\msys64\mingw32\lib -I.\include -IC:\msys64\mingw32\include ^
 src\main.cpp ^
 src\structures.cpp ^
 src\print.cpp ^
@@ -11,6 +11,8 @@ src\rectshape.cpp ^
 src\point.cpp ^
 src\goal_test.cpp ^
 src\node.cpp ^
+src\Input.cpp ^
+src\TextBox.cpp ^
 -lsfml-graphics-s ^
 -lsfml-window-s ^
 -lsfml-system-s ^
