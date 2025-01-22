@@ -784,6 +784,7 @@ int main() {
         );
 
     centerBox->setSize(sf::Vector2f(size));
+    centerBox->visible = false;
 
     point start = { 0, 0 };
     point target = { 0, 15 };
